@@ -5,35 +5,66 @@ declare(strict_types=1);
 namespace Parvion\Msg91;
 
 use Illuminate\Support\ServiceProvider;
+use Parvion\Msg91\Contracts\Msg91ClientInterface;
+use Parvion\Msg91\Contracts\OtpServiceInterface;
+use Parvion\Msg91\Contracts\SmsServiceInterface;
+use Parvion\Msg91\Events\MessageFailed;
+use Parvion\Msg91\Events\OtpSent;
+use Parvion\Msg91\Http\Msg91Client;
+use Parvion\Msg91\Listeners\LogMsg91Activity;
+use Parvion\Msg91\Logging\LogDriverManager;
 
 /**
  * Class Msg91ServiceProvider
  *
- * Registers all package bindings, publishes config and migrations,
+ * Registers all package bindings, publishes config/migrations,
  * and wires up event-listener pairs. Auto-discovered by Laravel via
  * the extra.laravel key in composer.json.
+ *
+ * Container bindings:
+ *   Msg91ClientInterface  → Msg91Client        (transient)
+ *   LogDriverManager      → LogDriverManager   (singleton)
+ *   Msg91::class          → Msg91              (singleton)
+ *   OtpServiceInterface   → Msg91 singleton    (alias)
+ *   SmsServiceInterface   → Msg91 singleton    (alias)
  *
  * @package Parvion\Msg91
  */
 class Msg91ServiceProvider extends ServiceProvider
 {
-    /**
-     * Register package services into the container.
-     */
     public function register(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/Config/msg91.php',
-            'msg91'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/Config/msg91.php', 'msg91');
 
-        // TODO: Phase 1 — bind Msg91ClientInterface, OtpServiceInterface, SmsServiceInterface
-        // TODO: Phase 1 — singleton bind Msg91::class
+        $this->app->singleton(LogDriverManager::class);
+
+        $this->app->bind(Msg91ClientInterface::class, function ($app): Msg91Client {
+            return new Msg91Client($app->make(LogDriverManager::class));
+        });
+
+        $this->app->singleton(\Parvion\Msg91\Support\PhoneNumberFormatter::class, function () {
+            return new \Parvion\Msg91\Support\PhoneNumberFormatter(
+                config('msg91.default_country_code', '91'),
+            );
+        });
+
+        $this->app->singleton(\Parvion\Msg91\Support\Msg91Logger::class, function ($app) {
+            return new \Parvion\Msg91\Support\Msg91Logger(
+                $app->make(LogDriverManager::class),
+            );
+        });
+
+        $this->app->singleton(Msg91::class, function ($app): Msg91 {
+            return new Msg91(
+                $app->make(Msg91ClientInterface::class),
+                $app->make(LogDriverManager::class),
+            );
+        });
+
+        $this->app->bind(OtpServiceInterface::class, fn ($app) => $app->make(Msg91::class));
+        $this->app->bind(SmsServiceInterface::class, fn ($app) => $app->make(Msg91::class));
     }
 
-    /**
-     * Bootstrap package services.
-     */
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
@@ -44,37 +75,20 @@ class Msg91ServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../database/migrations/' => database_path('migrations'),
             ], 'msg91-migrations');
-
-            $this->publishes([
-                __DIR__ . '/../resources/views' => resource_path('views/vendor/msg91'),
-            ], 'msg91-views');
         }
 
-        // Load package Blade views
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'msg91');
-
-        // Register Livewire components (only if Livewire is installed and enabled in config)
-        if (config('msg91.livewire.register_components', true)) {
-            $this->bootLivewireComponents();
-        }
-
-        // TODO: Phase 7 — register event-listener pairs (OtpSent, MessageFailed → LogMsg91Activity)
-        //                  based on config('msg91.logging.driver')
+        $this->bootEventListeners();
     }
 
-    /**
-     * Register built-in Livewire components if Livewire is available.
-     */
-    protected function bootLivewireComponents(): void
+    protected function bootEventListeners(): void
     {
-        if (! class_exists(\Livewire\Livewire::class)) {
+        $driver = config('msg91.logging.driver', 'null');
+
+        if ($driver === 'null') {
             return;
         }
 
-        $componentName = config('msg91.livewire.otp_component_name', 'msg91-otp-verification');
-
-        \Livewire\Livewire::component($componentName, \Parvion\Msg91\Livewire\OtpVerification::class);
-
-        // TODO: Phase 5 — register additional Livewire components (email, whatsapp)
+        $this->app['events']->listen(OtpSent::class, LogMsg91Activity::class);
+        $this->app['events']->listen(MessageFailed::class, LogMsg91Activity::class);
     }
 }

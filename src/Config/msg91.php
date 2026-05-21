@@ -116,26 +116,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Livewire Integration
-    |--------------------------------------------------------------------------
-    | register_components : Auto-register built-in Livewire components.
-    | otp_component_name  : Blade tag name for the OTP verification component.
-    |                       e.g. <livewire:msg91-otp-verification />
-    | auto_send_on_mount  : If true, sendOtp() is called automatically when
-    |                       the OTP component mounts.
-    | resend_cooldown     : Seconds the user must wait before requesting a
-    |                       resend (enforced in the Livewire component).
-    |
-    */
-    'livewire' => [
-        'register_components' => (bool) env('MSG91_LIVEWIRE_COMPONENTS', true),
-        'otp_component_name'  => 'msg91-otp-verification',
-        'auto_send_on_mount'  => (bool) env('MSG91_OTP_AUTO_SEND', true),
-        'resend_cooldown'     => (int) env('MSG91_OTP_RESEND_COOLDOWN', 30),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | OTP Defaults
     |--------------------------------------------------------------------------
     | Default OTP template ID and configuration.

@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace Parvion\Msg91\Logging\Drivers;
 
+use Illuminate\Support\Facades\Log;
 use Parvion\Msg91\Logging\Contracts\LogDriverInterface;
 
 /**
  * Class StackLogDriver
  *
- * Delegates every log call to BOTH ChannelLogDriver and DatabaseLogDriver.
+ * Delegates log calls to multiple drivers simultaneously (fan-out).
  * Active when config('msg91.logging.driver') = 'stack'.
  *
- * If either inner driver throws, the exception is caught and the other
- * driver still receives the call — logging never crashes the application.
+ * Default stack: ChannelLogDriver + DatabaseLogDriver.
+ *
+ * Fault isolation:
+ *   Each driver is called inside its own try/catch. If ChannelLogDriver
+ *   fails, DatabaseLogDriver still executes (and vice versa). This
+ *   guarantees that a broken log channel never causes data loss in the
+ *   database log, and a missing migration never silences channel logs.
  *
  * @package Parvion\Msg91\Logging\Drivers
  */
 class StackLogDriver implements LogDriverInterface
 {
-    public function __construct(
-        protected readonly ChannelLogDriver  $channelDriver,
-        protected readonly DatabaseLogDriver $databaseDriver,
-    ) {}
+    /**
+     * @var LogDriverInterface[]
+     */
+    private array $drivers;
+
+    /**
+     * @param  LogDriverInterface  ...$drivers  Drivers to fan-out to.
+     */
+    public function __construct(LogDriverInterface ...$drivers)
+    {
+        $this->drivers = $drivers;
+    }
 
     public function logSuccess(
         string $channel,
@@ -33,7 +47,17 @@ class StackLogDriver implements LogDriverInterface
         int    $httpStatus,
         int    $durationMs,
     ): void {
-        // TODO: Phase 7 — call both drivers, wrap each in try/catch
+        foreach ($this->drivers as $driver) {
+            try {
+                $driver->logSuccess(
+                    $channel, $action, $recipient,
+                    $request, $response, $httpStatus, $durationMs
+                );
+            } catch (\Throwable $e) {
+                // Fault isolation: log the error and continue to the next driver
+                $this->reportDriverFailure($driver, 'logSuccess', $e);
+            }
+        }
     }
 
     public function logFailure(
@@ -45,6 +69,38 @@ class StackLogDriver implements LogDriverInterface
         ?int       $httpStatus,
         int        $durationMs,
     ): void {
-        // TODO: Phase 7 — call both drivers, wrap each in try/catch
+        foreach ($this->drivers as $driver) {
+            try {
+                $driver->logFailure(
+                    $channel, $action, $recipient,
+                    $request, $exception, $httpStatus, $durationMs
+                );
+            } catch (\Throwable $e) {
+                // Fault isolation: log the error and continue to the next driver
+                $this->reportDriverFailure($driver, 'logFailure', $e);
+            }
+        }
+    }
+
+    /**
+     * Report a driver-level failure without interrupting the fan-out.
+     */
+    private function reportDriverFailure(
+        LogDriverInterface $driver,
+        string             $method,
+        \Throwable         $e,
+    ): void {
+        $driverClass = get_class($driver);
+
+        // Use a direct Log call — this should not go through our drivers
+        // to avoid infinite recursion if the log channel itself is broken.
+        try {
+            Log::warning(
+                "[MSG91] StackLogDriver: {$driverClass}::{$method}() failed — {$e->getMessage()}"
+            );
+        } catch (\Throwable) {
+            // Last resort: if even the fallback log fails, silently swallow.
+            // MSG91 API calls must never be interrupted by logging.
+        }
     }
 }
