@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Migration: create_msg91_logs_table
+ *
+ * Creates the activity log table for MSG91 API interactions.
+ * Publish and run this migration via:
+ *   php artisan vendor:publish --tag=msg91-migrations
+ *   php artisan migrate
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('msg91_logs', function (Blueprint $table) {
+            $table->id();
+
+            // Channel: otp, sms, email, whatsapp
+            $table->string('channel', 20)->index();
+
+            // Action: send_otp, verify_otp, resend_otp, send_sms, etc.
+            $table->string('action', 50);
+
+            // The recipient (mobile number, email address, etc.)
+            $table->string('recipient')->index();
+
+            // HTTP request payload sent to MSG91
+            $table->json('request_payload')->nullable();
+
+            // Raw HTTP response received from MSG91
+            $table->json('response_payload')->nullable();
+
+            // HTTP status code (200, 400, 429, 500, etc.)
+            $table->unsignedSmallInteger('http_status')->nullable();
+
+            // Final outcome: success | failed
+            $table->enum('status', ['success', 'failed'])->index();
+
+            // Exception message if the call failed
+            $table->text('error_message')->nullable();
+
+            // Duration of the API call in milliseconds
+            $table->unsignedInteger('duration_ms')->nullable();
+
+            $table->timestamps();
+
+            // Composite index for dashboard queries
+            $table->index(['channel', 'status', 'created_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('msg91_logs');
+    }
+};

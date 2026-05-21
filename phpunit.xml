@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         stopOnFailure="false"
+         processIsolation="false"
+         backupGlobals="false"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory>src/Config</directory>
+        </exclude>
+        <report>
+            <html outputDirectory="coverage/html" lowUpperBound="50" highLowerBound="90"/>
+            <clover outputFile="coverage/clover.xml"/>
+        </report>
+    </coverage>
+
+    <php>
+        <env name="APP_ENV"             value="testing"/>
+        <env name="CACHE_DRIVER"        value="array"/>
+        <env name="QUEUE_CONNECTION"    value="sync"/>
+        <env name="DB_CONNECTION"       value="sqlite"/>
+        <env name="DB_DATABASE"         value=":memory:"/>
+        <env name="MSG91_AUTH_KEY"      value="test-auth-key-12345"/>
+        <env name="MSG91_SENDER_ID"     value="TSTRDR"/>
+        <env name="MSG91_COUNTRY_CODE"  value="91"/>
+        <env name="MSG91_LOG_REQUESTS"  value="false"/>
+        <env name="MSG91_LOG_ACTIVITY"  value="false"/>
+    </php>
+</phpunit>
