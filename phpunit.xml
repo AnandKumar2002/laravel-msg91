@@ -6,6 +6,8 @@
          stopOnFailure="false"
          processIsolation="false"
          backupGlobals="false"
+         failOnWarning="false"
+         failOnDeprecation="false"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -16,18 +18,6 @@
         </testsuite>
     </testsuites>
 
-    <coverage>
-        <include>
-            <directory suffix=".php">src</directory>
-        </include>
-        <exclude>
-            <directory>src/Config</directory>
-        </exclude>
-        <report>
-            <html outputDirectory="coverage/html" lowUpperBound="50" highLowerBound="90"/>
-            <clover outputFile="coverage/clover.xml"/>
-        </report>
-    </coverage>
 
     <php>
         <env name="APP_ENV"             value="testing"/>
