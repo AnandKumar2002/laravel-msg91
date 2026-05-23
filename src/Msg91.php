@@ -35,15 +35,11 @@ use Parvion\Msg91\Traits\Behaviors\WithRetries;
  */
 class Msg91 implements OtpServiceInterface, SmsServiceInterface
 {
-    // ── Cross-cutting behavior traits ──────────────────────────────────────────
     use FakesMsg91;
-
     use InteractsWithConfig;
     use Macroable;
     use ManagesEmail;
-    // ── API service traits ─────────────────────────────────────────────────────
     use ManagesOtp;
-
     use ManagesSms;
     use ManagesThrottling;
     use ManagesWhatsApp;
