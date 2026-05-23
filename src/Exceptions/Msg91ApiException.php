@@ -12,16 +12,14 @@ use RuntimeException;
  *
  * Thrown when the MSG91 API returns an error response — either a non-2xx
  * HTTP status code, or a successful HTTP status with `"type":"error"` in the body.
- *
- * @package Parvion\Msg91\Exceptions
  */
 class Msg91ApiException extends RuntimeException
 {
     public function __construct(
-        string                   $message = '',
-        private readonly int     $statusCode = 0,
-        private readonly array   $responseBody = [],
-        ?\Throwable              $previous = null,
+        string $message = '',
+        private readonly int $statusCode = 0,
+        private readonly array $responseBody = [],
+        ?\Throwable $previous = null,
     ) {
         parent::__construct($message, $statusCode, $previous);
     }
@@ -34,8 +32,8 @@ class Msg91ApiException extends RuntimeException
      */
     public static function fromResponse(Response $response): static
     {
-        $body       = $response->json() ?? [];
-        $message    = $body['message'] ?? $response->reason() ?? 'Unknown MSG91 API error';
+        $body = $response->json() ?? [];
+        $message = $body['message'] ?? $response->reason() ?? 'Unknown MSG91 API error';
         $statusCode = $response->status();
 
         return new static($message, $statusCode, $body);

@@ -20,8 +20,6 @@ use Parvion\Msg91\Logging\LogDriverManager;
  *   The following keys are automatically redacted from request payloads
  *   before any log write to prevent secret leakage:
  *   'authkey', 'otp', 'auth_key'
- *
- * @package Parvion\Msg91\Support
  */
 class Msg91Logger
 {
@@ -35,22 +33,22 @@ class Msg91Logger
     /**
      * Log a successful API call.
      *
-     * @param  string  $channel     MSG91 channel: 'otp', 'sms', 'email', 'whatsapp'.
-     * @param  string  $action      Action: 'send_otp', 'verify_otp', 'send_sms', etc.
-     * @param  string  $recipient   Mobile number or email address.
-     * @param  array   $request     Request payload sent to MSG91.
-     * @param  array   $response    Normalised response from MSG91.
-     * @param  int     $httpStatus  HTTP status code.
-     * @param  int     $durationMs  Round-trip duration in milliseconds.
+     * @param  string  $channel  MSG91 channel: 'otp', 'sms', 'email', 'whatsapp'.
+     * @param  string  $action  Action: 'send_otp', 'verify_otp', 'send_sms', etc.
+     * @param  string  $recipient  Mobile number or email address.
+     * @param  array  $request  Request payload sent to MSG91.
+     * @param  array  $response  Normalised response from MSG91.
+     * @param  int  $httpStatus  HTTP status code.
+     * @param  int  $durationMs  Round-trip duration in milliseconds.
      */
     public function success(
         string $channel,
         string $action,
         string $recipient,
-        array  $request,
-        array  $response,
-        int    $httpStatus,
-        int    $durationMs,
+        array $request,
+        array $response,
+        int $httpStatus,
+        int $durationMs,
     ): void {
         $this->manager->logSuccess(
             $channel,
@@ -65,23 +63,15 @@ class Msg91Logger
 
     /**
      * Log a failed API call.
-     *
-     * @param  string      $channel
-     * @param  string      $action
-     * @param  string      $recipient
-     * @param  array       $request
-     * @param  \Throwable  $exception
-     * @param  int|null    $httpStatus
-     * @param  int         $durationMs
      */
     public function failure(
-        string     $channel,
-        string     $action,
-        string     $recipient,
-        array      $request,
+        string $channel,
+        string $action,
+        string $recipient,
+        array $request,
         \Throwable $exception,
-        ?int       $httpStatus,
-        int        $durationMs,
+        ?int $httpStatus,
+        int $durationMs,
     ): void {
         $this->manager->logFailure(
             $channel,
@@ -97,9 +87,6 @@ class Msg91Logger
     /**
      * Redact sensitive fields from a payload array before it is logged.
      * Operates recursively on nested arrays.
-     *
-     * @param  array  $payload
-     * @return array
      */
     public function mask(array $payload): array
     {

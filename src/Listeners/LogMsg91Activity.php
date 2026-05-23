@@ -20,8 +20,6 @@ use Parvion\Msg91\Logging\LogDriverManager;
  *
  * This listener handles both event types via a single handle() method
  * using PHP's union types + match expression.
- *
- * @package Parvion\Msg91\Listeners
  */
 class LogMsg91Activity
 {
@@ -38,7 +36,7 @@ class LogMsg91Activity
     public function handle(OtpSent|MessageFailed $event): void
     {
         match (true) {
-            $event instanceof OtpSent      => $this->handleOtpSent($event),
+            $event instanceof OtpSent => $this->handleOtpSent($event),
             $event instanceof MessageFailed => $this->handleMessageFailed($event),
         };
     }
@@ -49,15 +47,15 @@ class LogMsg91Activity
     private function handleOtpSent(OtpSent $event): void
     {
         $this->logManager->logSuccess(
-            channel:    'otp',
-            action:     'send_otp',
-            recipient:  $event->formattedMobile,
-            request:    [
+            channel: 'otp',
+            action: 'send_otp',
+            recipient: $event->formattedMobile,
+            request: [
                 'template_id' => $event->otpData->templateId,
-                'otp_length'  => $event->otpData->otpLength,
-                'otp_expiry'  => $event->otpData->otpExpiry,
+                'otp_length' => $event->otpData->otpLength,
+                'otp_expiry' => $event->otpData->otpExpiry,
             ],
-            response:   $event->response,
+            response: $event->response,
             httpStatus: (int) ($event->response['http_status'] ?? 200),
             durationMs: 0, // Duration not available from events
         );
@@ -69,11 +67,11 @@ class LogMsg91Activity
     private function handleMessageFailed(MessageFailed $event): void
     {
         $this->logManager->logFailure(
-            channel:    $event->channel,
-            action:     'api_call_failed',
-            recipient:  $event->recipient,
-            request:    $event->payload,
-            exception:  $event->exception,
+            channel: $event->channel,
+            action: 'api_call_failed',
+            recipient: $event->recipient,
+            request: $event->payload,
+            exception: $event->exception,
             httpStatus: method_exists($event->exception, 'getStatusCode')
                 ? $event->exception->getStatusCode()
                 : null,

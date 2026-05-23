@@ -16,10 +16,10 @@ class OtpDataTest extends TestCase
     public function test_constructor_creates_valid_instance(): void
     {
         $otp = new OtpData(
-            mobile:     '919876543210',
+            mobile: '919876543210',
             templateId: 'tpl_123',
-            otpLength:  6,
-            otpExpiry:  10,
+            otpLength: 6,
+            otpExpiry: 10,
         );
 
         $this->assertSame('919876543210', $otp->mobile);
@@ -33,7 +33,7 @@ class OtpDataTest extends TestCase
     public function test_from_array_creates_instance_with_defaults(): void
     {
         $otp = OtpData::fromArray([
-            'mobile'      => '919876543210',
+            'mobile' => '919876543210',
             'template_id' => 'tpl_abc',
         ]);
 
@@ -45,12 +45,12 @@ class OtpDataTest extends TestCase
     public function test_from_array_with_all_fields(): void
     {
         $otp = OtpData::fromArray([
-            'mobile'      => '919876543210',
+            'mobile' => '919876543210',
             'template_id' => 'tpl_abc',
-            'otp_length'  => 4,
-            'otp_expiry'  => 5,
-            'otp'         => '1234',
-            'variables'   => ['name' => 'Alice'],
+            'otp_length' => 4,
+            'otp_expiry' => 5,
+            'otp' => '1234',
+            'variables' => ['name' => 'Alice'],
         ]);
 
         $this->assertSame(4, $otp->otpLength);
@@ -62,11 +62,11 @@ class OtpDataTest extends TestCase
     public function test_to_array_generates_correct_payload(): void
     {
         $otp = new OtpData(
-            mobile:     '919876543210',
+            mobile: '919876543210',
             templateId: 'tpl_123',
-            otpLength:  6,
-            otpExpiry:  10,
-            otp:        '654321',
+            otpLength: 6,
+            otpExpiry: 10,
+            otp: '654321',
         );
 
         $payload = $otp->toArray();
@@ -81,7 +81,7 @@ class OtpDataTest extends TestCase
     public function test_to_array_excludes_null_otp(): void
     {
         $otp = new OtpData(
-            mobile:     '919876543210',
+            mobile: '919876543210',
             templateId: 'tpl_123',
         );
 
@@ -91,9 +91,9 @@ class OtpDataTest extends TestCase
     public function test_to_array_includes_extra_param_for_variables(): void
     {
         $otp = new OtpData(
-            mobile:     '919876543210',
+            mobile: '919876543210',
             templateId: 'tpl_123',
-            variables:  ['name' => 'Bob'],
+            variables: ['name' => 'Bob'],
         );
 
         $payload = $otp->toArray();

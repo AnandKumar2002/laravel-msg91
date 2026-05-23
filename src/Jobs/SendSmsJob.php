@@ -38,8 +38,6 @@ use Parvion\Msg91\Facades\Msg91;
  *   ADDITION to the WithRetries logic inside the Msg91Client. If all
  *   job-level retries are exhausted, the failed() method fires a
  *   MessageFailed event so listeners can alert or log the final failure.
- *
- * @package Parvion\Msg91\Jobs
  */
 class SendSmsJob implements ShouldQueue
 {
@@ -67,13 +65,13 @@ class SendSmsJob implements ShouldQueue
     /**
      * Create a new SendSmsJob instance.
      *
-     * @param  SmsData       $smsData     The SMS payload to send.
-     * @param  string[]|null $recipients  Optional override recipients for bulk sends.
-     *                                    When null, uses $smsData->mobile.
+     * @param  SmsData  $smsData  The SMS payload to send.
+     * @param  string[]|null  $recipients  Optional override recipients for bulk sends.
+     *                                     When null, uses $smsData->mobile.
      */
     public function __construct(
-        public readonly SmsData  $smsData,
-        public readonly ?array   $recipients = null,
+        public readonly SmsData $smsData,
+        public readonly ?array $recipients = null,
     ) {
         // Apply queue config defaults
         $this->onConnection(config('msg91.queue.connection'));
@@ -110,16 +108,16 @@ class SendSmsJob implements ShouldQueue
             ?? $this->smsData->getRecipients();
 
         $recipientSummary = count($recipientList) > 3
-            ? implode(',', array_slice($recipientList, 0, 3)) . '… +' . (count($recipientList) - 3) . ' more'
+            ? implode(',', array_slice($recipientList, 0, 3)).'… +'.(count($recipientList) - 3).' more'
             : implode(',', $recipientList);
 
         event(new MessageFailed(
-            channel:   'sms',
-            payload:   [
+            channel: 'sms',
+            payload: [
                 'recipients_count' => count($recipientList),
-                'route'            => $this->smsData->route->value,
-                'attempts'         => $this->attempts(),
-                'job_class'        => static::class,
+                'route' => $this->smsData->route->value,
+                'attempts' => $this->attempts(),
+                'job_class' => static::class,
             ],
             exception: $exception,
             recipient: $recipientSummary,
@@ -135,7 +133,7 @@ class SendSmsJob implements ShouldQueue
             ? count($this->recipients)
             : count($this->smsData->getRecipients());
 
-        return "SendSmsJob ({$count} recipient" . ($count > 1 ? 's' : '') . ')';
+        return "SendSmsJob ({$count} recipient".($count > 1 ? 's' : '').')';
     }
 
     /**
@@ -148,7 +146,7 @@ class SendSmsJob implements ShouldQueue
         return [
             'msg91',
             'sms',
-            'route:' . $this->smsData->route->label(),
+            'route:'.$this->smsData->route->label(),
         ];
     }
 }

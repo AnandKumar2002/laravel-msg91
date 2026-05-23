@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace Parvion\Msg91\Tests;
 
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use Parvion\Msg91\Msg91ServiceProvider;
 use Parvion\Msg91\Facades\Msg91;
+use Parvion\Msg91\Msg91ServiceProvider;
 
 /**
  * Class TestCase
  *
  * Base test case for all parvion/laravel-msg91 tests.
  * Bootstraps the package via Orchestra Testbench.
- *
- * @package Parvion\Msg91\Tests
  */
 abstract class TestCase extends OrchestraTestCase
 {

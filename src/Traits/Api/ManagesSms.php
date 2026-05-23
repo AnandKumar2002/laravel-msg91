@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Parvion\Msg91\Traits\Api;
 
+use Carbon\Carbon;
 use Parvion\Msg91\DTOs\SmsData;
 use Parvion\Msg91\Events\MessageFailed;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
+use Parvion\Msg91\Exceptions\Msg91RateLimitException;
 use Parvion\Msg91\Support\PhoneNumberFormatter;
 
 /**
@@ -35,8 +37,6 @@ use Parvion\Msg91\Support\PhoneNumberFormatter;
  *   - $this->withRetry()    → WithRetries trait
  *   - $this->checkThrottle() → ManagesThrottling trait
  *   - $this->isFeatureEnabled() → InteractsWithConfig trait
- *
- * @package Parvion\Msg91\Traits\Api
  */
 trait ManagesSms
 {
@@ -47,10 +47,10 @@ trait ManagesSms
      * For multi-recipient sends, SmsData->mobile can be an array.
      *
      * @param  SmsData  $data  Strongly-typed SMS payload.
-     * @return array           Normalised MSG91 response array.
+     * @return array Normalised MSG91 response array.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function sendSms(SmsData $data): array
@@ -61,9 +61,9 @@ trait ManagesSms
         }
 
         // ── 2. Format mobile numbers ───────────────────────────────────────────
-        $formatter  = $this->smsFormatter();
+        $formatter = $this->smsFormatter();
         $recipients = $data->getRecipients();
-        $formatted  = $formatter->formatMany($recipients);
+        $formatted = $formatter->formatMany($recipients);
 
         if (empty($formatted)) {
             throw new Msg91ApiException(
@@ -73,7 +73,7 @@ trait ManagesSms
         }
 
         // ── 3. Throttle guard (one check per batch, keyed by first recipient) ──
-        $this->checkThrottle('sms:send:' . $formatted[0]);
+        $this->checkThrottle('sms:send:'.$formatted[0]);
 
         // ── 4. Build payload ───────────────────────────────────────────────────
         $payload = $this->buildSmsPayload($data, $formatted);
@@ -85,8 +85,8 @@ trait ManagesSms
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'sms',
-                payload:   ['recipients_count' => count($formatted), 'route' => $data->route->value],
+                channel: 'sms',
+                payload: ['recipients_count' => count($formatted), 'route' => $data->route->value],
                 exception: $e,
                 recipient: implode(',', array_slice($formatted, 0, 3)),
             ));
@@ -101,11 +101,11 @@ trait ManagesSms
      * Each recipient can have per-recipient template variables via $data->variables.
      *
      * @param  string[]  $recipients  Array of mobile numbers (any format — auto-normalised).
-     * @param  SmsData   $data        Shared SMS config (message, route, sender, variables).
-     * @return array                  Normalised MSG91 response array.
+     * @param  SmsData  $data  Shared SMS config (message, route, sender, variables).
+     * @return array Normalised MSG91 response array.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function sendBulkSms(array $recipients, SmsData $data): array
@@ -127,7 +127,7 @@ trait ManagesSms
         }
 
         // ── 3. Throttle guard ──────────────────────────────────────────────────
-        $this->checkThrottle('sms:bulk:' . count($formatted));
+        $this->checkThrottle('sms:bulk:'.count($formatted));
 
         // ── 4. Build payload (same structure — just more recipients) ───────────
         $payload = $this->buildSmsPayload($data, $formatted);
@@ -139,10 +139,10 @@ trait ManagesSms
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'sms',
-                payload:   ['recipients_count' => count($formatted), 'route' => $data->route->value],
+                channel: 'sms',
+                payload: ['recipients_count' => count($formatted), 'route' => $data->route->value],
                 exception: $e,
-                recipient: count($formatted) . ' recipients (bulk)',
+                recipient: count($formatted).' recipients (bulk)',
             ));
             throw $e;
         }
@@ -152,7 +152,7 @@ trait ManagesSms
      * Check the delivery status of a previously sent SMS campaign.
      *
      * @param  string  $requestId  The MSG91 campaign/request ID returned from sendSms().
-     * @return array               Normalised delivery status response.
+     * @return array Normalised delivery status response.
      *
      * @throws FeatureDisabledException
      * @throws Msg91ApiException
@@ -174,12 +174,12 @@ trait ManagesSms
         // ── 2. Call API (no throttle for status checks) ────────────────────────
         try {
             return $this->withRetry(
-                fn () => $this->client->get('report/' . $requestId)
+                fn () => $this->client->get('report/'.$requestId)
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'sms',
-                payload:   ['request_id' => $requestId, 'action' => 'delivery_status'],
+                channel: 'sms',
+                payload: ['request_id' => $requestId, 'action' => 'delivery_status'],
                 exception: $e,
                 recipient: $requestId,
             ));
@@ -208,10 +208,10 @@ trait ManagesSms
         $senderId = $data->senderId ?? $this->getSenderId();
 
         $payload = [
-            'flow_id'   => $data->message, // flow_id doubles as template reference
-            'sender'    => $senderId,
+            'flow_id' => $data->message, // flow_id doubles as template reference
+            'sender' => $senderId,
             'short_url' => '0',
-            'route'     => (string) $data->route->value,
+            'route' => (string) $data->route->value,
         ];
 
         if ($data->unicode) {
@@ -248,14 +248,11 @@ trait ManagesSms
     /**
      * Schedule an SMS to be sent at a specific future date and time.
      *
-     * @param  SmsData $data
-     * @param  \Carbon\Carbon $sendAt
-     * @return array
      *
      * @throws FeatureDisabledException
      * @throws Msg91ApiException
      */
-    public function scheduleSms(SmsData $data, \Carbon\Carbon $sendAt): array
+    public function scheduleSms(SmsData $data, Carbon $sendAt): array
     {
         if (! $this->isFeatureEnabled('sms')) {
             throw FeatureDisabledException::make('sms');
@@ -281,10 +278,9 @@ trait ManagesSms
     /**
      * Trigger a predefined MSG91 Flow (Campaign).
      *
-     * @param  string $flowId    The Flow ID from the MSG91 dashboard
-     * @param  array  $variables Key-value pairs of variables for the flow
-     * @param  string $mobile    Recipient mobile number (E.164)
-     * @return array
+     * @param  string  $flowId  The Flow ID from the MSG91 dashboard
+     * @param  array  $variables  Key-value pairs of variables for the flow
+     * @param  string  $mobile  Recipient mobile number (E.164)
      *
      * @throws FeatureDisabledException
      * @throws Msg91ApiException
@@ -295,13 +291,13 @@ trait ManagesSms
             throw FeatureDisabledException::make('sms');
         }
 
-        $this->checkThrottle('sms:flow:' . $mobile);
+        $this->checkThrottle('sms:flow:'.$mobile);
 
         $payload = [
-            'flow_id'    => $flowId,
-            'mobiles'    => $mobile,
+            'flow_id' => $flowId,
+            'mobiles' => $mobile,
         ];
-        
+
         // Merge variables into the payload
         foreach ($variables as $key => $value) {
             $payload[$key] = $value;
@@ -320,13 +316,10 @@ trait ManagesSms
     /**
      * Fetch SMS usage analytics.
      *
-     * @param  \Carbon\Carbon $startDate
-     * @param  \Carbon\Carbon $endDate
-     * @return array
      *
      * @throws Msg91ApiException
      */
-    public function getSmsAnalytics(\Carbon\Carbon $startDate, \Carbon\Carbon $endDate): array
+    public function getSmsAnalytics(Carbon $startDate, Carbon $endDate): array
     {
         if (! $this->isFeatureEnabled('sms')) {
             throw FeatureDisabledException::make('sms');
@@ -336,26 +329,23 @@ trait ManagesSms
 
         $queryString = http_build_query([
             'startDate' => $startDate->format('Y-m-d'),
-            'endDate'   => $endDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
         ]);
 
         return $this->withRetry(
-            fn () => $this->client->get('report/analytics/p/sms?' . $queryString)
+            fn () => $this->client->get('report/analytics/p/sms?'.$queryString)
         );
     }
 
     /**
      * Fetch SMS delivery logs.
-     * Note: Assuming a similar log endpoint format as email/OTP logs if not strictly specified, 
+     * Note: Assuming a similar log endpoint format as email/OTP logs if not strictly specified,
      * typically report/logs/sms for MSG91.
      *
-     * @param  \Carbon\Carbon $startDate
-     * @param  \Carbon\Carbon $endDate
-     * @return array
      *
      * @throws Msg91ApiException
      */
-    public function getSmsLogs(\Carbon\Carbon $startDate, \Carbon\Carbon $endDate): array
+    public function getSmsLogs(Carbon $startDate, Carbon $endDate): array
     {
         if (! $this->isFeatureEnabled('sms')) {
             throw FeatureDisabledException::make('sms');
@@ -365,12 +355,12 @@ trait ManagesSms
 
         $queryString = http_build_query([
             'startDate' => $startDate->format('Y-m-d'),
-            'endDate'   => $endDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
         ]);
 
         // Using POST for logs as per typical MSG91 v5 spec, similar to mail logs
         return $this->withRetry(
-            fn () => $this->client->post('report/logs/sms?' . $queryString, [])
+            fn () => $this->client->post('report/logs/sms?'.$queryString, [])
         );
     }
 }

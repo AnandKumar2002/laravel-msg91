@@ -12,27 +12,14 @@ class MessageDeliveryStatusChanged
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * @var string
-     */
     public string $requestId;
 
-    /**
-     * @var string
-     */
     public string $status;
 
-    /**
-     * @var array
-     */
     public array $rawPayload;
 
     /**
      * Create a new event instance.
-     *
-     * @param string $requestId
-     * @param string $status
-     * @param array $rawPayload
      */
     public function __construct(string $requestId, string $status, array $rawPayload)
     {

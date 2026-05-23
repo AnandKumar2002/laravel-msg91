@@ -13,6 +13,8 @@ use Parvion\Msg91\Events\OtpSent;
 use Parvion\Msg91\Http\Msg91Client;
 use Parvion\Msg91\Listeners\LogMsg91Activity;
 use Parvion\Msg91\Logging\LogDriverManager;
+use Parvion\Msg91\Support\Msg91Logger;
+use Parvion\Msg91\Support\PhoneNumberFormatter;
 
 /**
  * Class Msg91ServiceProvider
@@ -27,14 +29,12 @@ use Parvion\Msg91\Logging\LogDriverManager;
  *   Msg91::class          → Msg91              (singleton)
  *   OtpServiceInterface   → Msg91 singleton    (alias)
  *   SmsServiceInterface   → Msg91 singleton    (alias)
- *
- * @package Parvion\Msg91
  */
 class Msg91ServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/Config/msg91.php', 'msg91');
+        $this->mergeConfigFrom(__DIR__.'/Config/msg91.php', 'msg91');
 
         $this->app->singleton(LogDriverManager::class);
 
@@ -42,14 +42,14 @@ class Msg91ServiceProvider extends ServiceProvider
             return new Msg91Client($app->make(LogDriverManager::class));
         });
 
-        $this->app->singleton(\Parvion\Msg91\Support\PhoneNumberFormatter::class, function () {
-            return new \Parvion\Msg91\Support\PhoneNumberFormatter(
+        $this->app->singleton(PhoneNumberFormatter::class, function () {
+            return new PhoneNumberFormatter(
                 config('msg91.default_country_code', '91'),
             );
         });
 
-        $this->app->singleton(\Parvion\Msg91\Support\Msg91Logger::class, function ($app) {
-            return new \Parvion\Msg91\Support\Msg91Logger(
+        $this->app->singleton(Msg91Logger::class, function ($app) {
+            return new Msg91Logger(
                 $app->make(LogDriverManager::class),
             );
         });
@@ -69,11 +69,11 @@ class Msg91ServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/Config/msg91.php' => config_path('msg91.php'),
+                __DIR__.'/Config/msg91.php' => config_path('msg91.php'),
             ], 'msg91-config');
 
             $this->publishes([
-                __DIR__ . '/../database/migrations/' => database_path('migrations'),
+                __DIR__.'/../database/migrations/' => database_path('migrations'),
             ], 'msg91-migrations');
         }
 

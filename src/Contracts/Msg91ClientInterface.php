@@ -20,10 +20,8 @@ use Parvion\Msg91\Exceptions\Msg91RateLimitException;
  *   'data'    => array|null,
  * ]
  *
- * @throws Msg91ApiException       On non-2xx responses or error body from MSG91.
+ * @throws Msg91ApiException On non-2xx responses or error body from MSG91.
  * @throws Msg91RateLimitException On 429 responses or local throttle rejection.
- *
- * @package Parvion\Msg91\Contracts
  */
 interface Msg91ClientInterface
 {
@@ -31,8 +29,8 @@ interface Msg91ClientInterface
      * Perform a GET request against the MSG91 API.
      *
      * @param  string  $endpoint  Relative endpoint path (e.g. 'otp/verify').
-     * @param  array   $query     URL query parameters to append.
-     * @return array              Normalised response array.
+     * @param  array  $query  URL query parameters to append.
+     * @return array Normalised response array.
      *
      * @throws Msg91ApiException
      * @throws Msg91RateLimitException
@@ -43,8 +41,8 @@ interface Msg91ClientInterface
      * Perform a POST request against the MSG91 API with a JSON body.
      *
      * @param  string  $endpoint  Relative endpoint path (e.g. 'otp').
-     * @param  array   $payload   Request body — will be JSON-encoded.
-     * @return array              Normalised response array.
+     * @param  array  $payload  Request body — will be JSON-encoded.
+     * @return array Normalised response array.
      *
      * @throws Msg91ApiException
      * @throws Msg91RateLimitException

@@ -6,6 +6,7 @@ namespace Parvion\Msg91\Logging\Drivers;
 
 use Illuminate\Support\Facades\Log;
 use Parvion\Msg91\Logging\Contracts\LogDriverInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ChannelLogDriver
@@ -22,8 +23,6 @@ use Parvion\Msg91\Logging\Contracts\LogDriverInterface;
  *
  * Structured context includes: channel, action, recipient, http_status,
  * duration_ms, and a truncated request/response payload.
- *
- * @package Parvion\Msg91\Logging\Drivers
  */
 class ChannelLogDriver implements LogDriverInterface
 {
@@ -37,60 +36,58 @@ class ChannelLogDriver implements LogDriverInterface
         string $channel,
         string $action,
         string $recipient,
-        array  $request,
-        array  $response,
-        int    $httpStatus,
-        int    $durationMs,
+        array $request,
+        array $response,
+        int $httpStatus,
+        int $durationMs,
     ): void {
-        $level   = config('msg91.logging.level', 'info');
+        $level = config('msg91.logging.level', 'info');
         $message = "[MSG91] {$channel}:{$action} → {$httpStatus} ({$durationMs}ms)";
 
         $this->logger()->log($level, $message, [
-            'channel'    => $channel,
-            'action'     => $action,
-            'recipient'  => $recipient,
-            'status'     => 'success',
-            'http_code'  => $httpStatus,
-            'duration'   => $durationMs,
-            'request'    => $this->truncate($request),
-            'response'   => $this->truncate($response),
+            'channel' => $channel,
+            'action' => $action,
+            'recipient' => $recipient,
+            'status' => 'success',
+            'http_code' => $httpStatus,
+            'duration' => $durationMs,
+            'request' => $this->truncate($request),
+            'response' => $this->truncate($response),
         ]);
     }
 
     public function logFailure(
-        string     $channel,
-        string     $action,
-        string     $recipient,
-        array      $request,
+        string $channel,
+        string $action,
+        string $recipient,
+        array $request,
         \Throwable $exception,
-        ?int       $httpStatus,
-        int        $durationMs,
+        ?int $httpStatus,
+        int $durationMs,
     ): void {
         $message = "[MSG91] {$channel}:{$action} FAILED → "
-            . ($httpStatus ?? 'N/A')
-            . " ({$durationMs}ms) — {$exception->getMessage()}";
+            .($httpStatus ?? 'N/A')
+            ." ({$durationMs}ms) — {$exception->getMessage()}";
 
         $this->logger()->error($message, [
-            'channel'       => $channel,
-            'action'        => $action,
-            'recipient'     => $recipient,
-            'status'        => 'failed',
-            'http_code'     => $httpStatus,
-            'duration'      => $durationMs,
-            'request'       => $this->truncate($request),
-            'error_class'   => get_class($exception),
+            'channel' => $channel,
+            'action' => $action,
+            'recipient' => $recipient,
+            'status' => 'failed',
+            'http_code' => $httpStatus,
+            'duration' => $durationMs,
+            'request' => $this->truncate($request),
+            'error_class' => get_class($exception),
             'error_message' => $exception->getMessage(),
-            'error_trace'   => substr($exception->getTraceAsString(), 0, 1000),
+            'error_trace' => substr($exception->getTraceAsString(), 0, 1000),
         ]);
     }
 
     /**
      * Get the configured log channel instance.
      * Returns the default channel when msg91.logging.channel is null.
-     *
-     * @return \Psr\Log\LoggerInterface
      */
-    private function logger(): \Psr\Log\LoggerInterface
+    private function logger(): LoggerInterface
     {
         $channelName = config('msg91.logging.channel');
 
@@ -114,7 +111,7 @@ class ChannelLogDriver implements LogDriverInterface
         }
 
         if (strlen($json) > self::MAX_PAYLOAD_LENGTH) {
-            return substr($json, 0, self::MAX_PAYLOAD_LENGTH) . '…[TRUNCATED]';
+            return substr($json, 0, self::MAX_PAYLOAD_LENGTH).'…[TRUNCATED]';
         }
 
         return $json;

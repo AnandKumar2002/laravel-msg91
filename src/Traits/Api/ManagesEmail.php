@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Parvion\Msg91\Traits\Api;
 
+use Carbon\Carbon;
 use Parvion\Msg91\DTOs\EmailData;
 use Parvion\Msg91\Events\MessageFailed;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
+use Parvion\Msg91\Exceptions\Msg91RateLimitException;
 
 /**
  * Trait ManagesEmail
@@ -32,8 +34,6 @@ use Parvion\Msg91\Exceptions\Msg91ApiException;
  *   - $this->withRetry()    → WithRetries trait
  *   - $this->checkThrottle() → ManagesThrottling trait
  *   - $this->isFeatureEnabled() → InteractsWithConfig trait
- *
- * @package Parvion\Msg91\Traits\Api
  */
 trait ManagesEmail
 {
@@ -41,10 +41,10 @@ trait ManagesEmail
      * Send a single email or multi-recipient email using an EmailData DTO.
      *
      * @param  EmailData  $data  Strongly-typed email payload.
-     * @return array             Normalised MSG91 response array.
+     * @return array Normalised MSG91 response array.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function sendEmail(EmailData $data): array
@@ -56,7 +56,7 @@ trait ManagesEmail
 
         // ── 2. Throttle guard ──────────────────────────────────────────────────
         $recipients = $data->getRecipients();
-        $this->checkThrottle('email:send:' . $recipients[0]);
+        $this->checkThrottle('email:send:'.$recipients[0]);
 
         // ── 3. Build payload ───────────────────────────────────────────────────
         $payload = $data->toArray();
@@ -68,11 +68,11 @@ trait ManagesEmail
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'email',
-                payload:   [
+                channel: 'email',
+                payload: [
                     'recipients_count' => count($recipients),
-                    'template_id'      => $data->templateId,
-                    'subject'          => $data->subject,
+                    'template_id' => $data->templateId,
+                    'subject' => $data->subject,
                 ],
                 exception: $e,
                 recipient: implode(',', array_slice($recipients, 0, 3)),
@@ -86,12 +86,12 @@ trait ManagesEmail
      *
      * The $recipients array overrides any recipients inside $data.
      *
-     * @param  string[]   $recipients  Array of email addresses.
-     * @param  EmailData  $data        Shared email config (subject, template, variables).
-     * @return array                   Normalised MSG91 response array.
+     * @param  string[]  $recipients  Array of email addresses.
+     * @param  EmailData  $data  Shared email config (subject, template, variables).
+     * @return array Normalised MSG91 response array.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function sendBulkEmail(array $recipients, EmailData $data): array
@@ -109,10 +109,10 @@ trait ManagesEmail
         }
 
         // ── 2. Throttle guard ──────────────────────────────────────────────────
-        $this->checkThrottle('email:bulk:' . count($recipients));
+        $this->checkThrottle('email:bulk:'.count($recipients));
 
         // ── 3. Build payload with overridden recipients ────────────────────────
-        $payload       = $data->toArray();
+        $payload = $data->toArray();
         $payload['to'] = array_map(fn ($email) => ['email' => $email], $recipients);
 
         // ── 4. Call API with retry ─────────────────────────────────────────────
@@ -122,14 +122,14 @@ trait ManagesEmail
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'email',
-                payload:   [
+                channel: 'email',
+                payload: [
                     'recipients_count' => count($recipients),
-                    'template_id'      => $data->templateId,
-                    'subject'          => $data->subject,
+                    'template_id' => $data->templateId,
+                    'subject' => $data->subject,
                 ],
                 exception: $e,
-                recipient: count($recipients) . ' recipients (bulk)',
+                recipient: count($recipients).' recipients (bulk)',
             ));
             throw $e;
         }
@@ -139,8 +139,6 @@ trait ManagesEmail
      * Send email with validation.
      * Uses the same endpoint but intended for high-deliverability strict validation.
      *
-     * @param  EmailData  $data
-     * @return array
      *
      * @throws FeatureDisabledException
      * @throws Msg91ApiException
@@ -154,9 +152,8 @@ trait ManagesEmail
     /**
      * Send email using a CSV file for massive bulk processing.
      *
-     * @param  string     $csvFilePath Absolute path to the CSV file
-     * @param  EmailData  $data        Email template and basic config
-     * @return array
+     * @param  string  $csvFilePath  Absolute path to the CSV file
+     * @param  EmailData  $data  Email template and basic config
      *
      * @throws FeatureDisabledException
      * @throws Msg91ApiException
@@ -192,9 +189,8 @@ trait ManagesEmail
     /**
      * Create a new HTML Email Template programmatically.
      *
-     * @param  string $name        Name of the template
-     * @param  string $htmlContent The raw HTML content
-     * @return array
+     * @param  string  $name  Name of the template
+     * @param  string  $htmlContent  The raw HTML content
      *
      * @throws Msg91ApiException
      */
@@ -220,8 +216,7 @@ trait ManagesEmail
     /**
      * Fetch existing email templates from the MSG91 account.
      *
-     * @param  array $filters Optional query parameters (e.g. per_page, search_in)
-     * @return array
+     * @param  array  $filters  Optional query parameters (e.g. per_page, search_in)
      *
      * @throws Msg91ApiException
      */
@@ -243,20 +238,17 @@ trait ManagesEmail
         $queryString = http_build_query($query);
 
         return $this->withRetry(
-            fn () => $this->client->get('email/templates?' . $queryString)
+            fn () => $this->client->get('email/templates?'.$queryString)
         );
     }
 
     /**
      * Fetch email delivery logs for a specific date range.
      *
-     * @param  \Carbon\Carbon $startDate
-     * @param  \Carbon\Carbon $endDate
-     * @return array
      *
      * @throws Msg91ApiException
      */
-    public function getEmailLogs(\Carbon\Carbon $startDate, \Carbon\Carbon $endDate): array
+    public function getEmailLogs(Carbon $startDate, Carbon $endDate): array
     {
         if (! $this->isFeatureEnabled('email')) {
             throw FeatureDisabledException::make('email');
@@ -266,11 +258,11 @@ trait ManagesEmail
 
         $queryString = http_build_query([
             'startDate' => $startDate->format('Y-m-d'),
-            'endDate'   => $endDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
         ]);
 
         return $this->withRetry(
-            fn () => $this->client->post('report/logs/mail?' . $queryString, [])
+            fn () => $this->client->post('report/logs/mail?'.$queryString, [])
         );
     }
 }

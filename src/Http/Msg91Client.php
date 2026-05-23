@@ -26,8 +26,6 @@ use Parvion\Msg91\Traits\Behaviors\InteractsWithConfig;
  *
  * This class is intentionally kept stateless. All config values are read
  * fresh on every request so runtime changes (e.g. in tests) take effect.
- *
- * @package Parvion\Msg91\Http
  */
 class Msg91Client implements Msg91ClientInterface
 {
@@ -42,7 +40,7 @@ class Msg91Client implements Msg91ClientInterface
      */
     public function get(string $endpoint, array $query = []): array
     {
-        $url       = $this->resolveUrl($endpoint);
+        $url = $this->resolveUrl($endpoint);
         $startedAt = hrtime(true);
 
         try {
@@ -51,14 +49,14 @@ class Msg91Client implements Msg91ClientInterface
                 ->get($url, $query);
 
             $durationMs = $this->elapsed($startedAt);
-            $result     = $this->handleResponse($response);
+            $result = $this->handleResponse($response);
 
             $this->logManager->logSuccess(
-                channel:    'http',
-                action:     'GET ' . $endpoint,
-                recipient:  $query['mobile'] ?? $query['to'] ?? '',
-                request:    $this->maskSensitive(array_merge(['url' => $url], $query)),
-                response:   $result,
+                channel: 'http',
+                action: 'GET '.$endpoint,
+                recipient: $query['mobile'] ?? $query['to'] ?? '',
+                request: $this->maskSensitive(array_merge(['url' => $url], $query)),
+                response: $result,
                 httpStatus: $response->status(),
                 durationMs: $durationMs,
             );
@@ -66,11 +64,11 @@ class Msg91Client implements Msg91ClientInterface
             return $result;
         } catch (Msg91ApiException $e) {
             $this->logManager->logFailure(
-                channel:    'http',
-                action:     'GET ' . $endpoint,
-                recipient:  $query['mobile'] ?? $query['to'] ?? '',
-                request:    $this->maskSensitive(array_merge(['url' => $url], $query)),
-                exception:  $e,
+                channel: 'http',
+                action: 'GET '.$endpoint,
+                recipient: $query['mobile'] ?? $query['to'] ?? '',
+                request: $this->maskSensitive(array_merge(['url' => $url], $query)),
+                exception: $e,
                 httpStatus: $e->getStatusCode() ?: null,
                 durationMs: $this->elapsed($startedAt),
             );
@@ -78,11 +76,11 @@ class Msg91Client implements Msg91ClientInterface
             throw $e;
         } catch (\Throwable $e) {
             $this->logManager->logFailure(
-                channel:    'http',
-                action:     'GET ' . $endpoint,
-                recipient:  $query['mobile'] ?? $query['to'] ?? '',
-                request:    $this->maskSensitive(array_merge(['url' => $url], $query)),
-                exception:  $e,
+                channel: 'http',
+                action: 'GET '.$endpoint,
+                recipient: $query['mobile'] ?? $query['to'] ?? '',
+                request: $this->maskSensitive(array_merge(['url' => $url], $query)),
+                exception: $e,
                 httpStatus: null,
                 durationMs: $this->elapsed($startedAt),
             );
@@ -101,7 +99,7 @@ class Msg91Client implements Msg91ClientInterface
      */
     public function post(string $endpoint, array $payload = []): array
     {
-        $url       = $this->resolveUrl($endpoint);
+        $url = $this->resolveUrl($endpoint);
         $startedAt = hrtime(true);
 
         try {
@@ -110,14 +108,14 @@ class Msg91Client implements Msg91ClientInterface
                 ->post($url, $payload);
 
             $durationMs = $this->elapsed($startedAt);
-            $result     = $this->handleResponse($response);
+            $result = $this->handleResponse($response);
 
             $this->logManager->logSuccess(
-                channel:    'http',
-                action:     'POST ' . $endpoint,
-                recipient:  $payload['mobile'] ?? $payload['to'] ?? '',
-                request:    $this->maskSensitive($payload),
-                response:   $result,
+                channel: 'http',
+                action: 'POST '.$endpoint,
+                recipient: $payload['mobile'] ?? $payload['to'] ?? '',
+                request: $this->maskSensitive($payload),
+                response: $result,
                 httpStatus: $response->status(),
                 durationMs: $durationMs,
             );
@@ -125,11 +123,11 @@ class Msg91Client implements Msg91ClientInterface
             return $result;
         } catch (Msg91ApiException $e) {
             $this->logManager->logFailure(
-                channel:    'http',
-                action:     'POST ' . $endpoint,
-                recipient:  $payload['mobile'] ?? $payload['to'] ?? '',
-                request:    $this->maskSensitive($payload),
-                exception:  $e,
+                channel: 'http',
+                action: 'POST '.$endpoint,
+                recipient: $payload['mobile'] ?? $payload['to'] ?? '',
+                request: $this->maskSensitive($payload),
+                exception: $e,
                 httpStatus: $e->getStatusCode() ?: null,
                 durationMs: $this->elapsed($startedAt),
             );
@@ -137,11 +135,11 @@ class Msg91Client implements Msg91ClientInterface
             throw $e;
         } catch (\Throwable $e) {
             $this->logManager->logFailure(
-                channel:    'http',
-                action:     'POST ' . $endpoint,
-                recipient:  $payload['mobile'] ?? $payload['to'] ?? '',
-                request:    $this->maskSensitive($payload),
-                exception:  $e,
+                channel: 'http',
+                action: 'POST '.$endpoint,
+                recipient: $payload['mobile'] ?? $payload['to'] ?? '',
+                request: $this->maskSensitive($payload),
+                exception: $e,
                 httpStatus: null,
                 durationMs: $this->elapsed($startedAt),
             );
@@ -165,9 +163,9 @@ class Msg91Client implements Msg91ClientInterface
     private function buildHeaders(): array
     {
         return [
-            'authkey'      => $this->getAuthKey(),
+            'authkey' => $this->getAuthKey(),
             'Content-Type' => 'application/json',
-            'Accept'       => 'application/json',
+            'Accept' => 'application/json',
         ];
     }
 
@@ -175,19 +173,19 @@ class Msg91Client implements Msg91ClientInterface
      * Resolve a relative endpoint path to an absolute URL.
      *
      * @param  string  $endpoint  e.g. 'otp' or 'otp/verify'
-     * @return string             e.g. 'https://api.msg91.com/api/v5/otp'
+     * @return string e.g. 'https://api.msg91.com/api/v5/otp'
      */
     private function resolveUrl(string $endpoint): string
     {
-        return $this->getBaseUrl() . ltrim($endpoint, '/');
+        return $this->getBaseUrl().ltrim($endpoint, '/');
     }
 
     /**
      * Inspect a HTTP response and either return the normalised payload
      * or throw the appropriate exception.
      *
-     * @throws Msg91RateLimitException  On HTTP 429.
-     * @throws Msg91ApiException        On any other non-2xx or MSG91 error body.
+     * @throws Msg91RateLimitException On HTTP 429.
+     * @throws Msg91ApiException On any other non-2xx or MSG91 error body.
      */
     private function handleResponse(Response $response): array
     {
@@ -219,9 +217,9 @@ class Msg91Client implements Msg91ClientInterface
     private function normalise(array $body): array
     {
         return [
-            'type'    => $body['type']    ?? 'success',
+            'type' => $body['type'] ?? 'success',
             'message' => $body['message'] ?? '',
-            'data'    => $body['data']    ?? array_diff_key($body, array_flip(['type', 'message'])),
+            'data' => $body['data'] ?? array_diff_key($body, array_flip(['type', 'message'])),
         ];
     }
 

@@ -25,8 +25,6 @@ use Parvion\Msg91\Exceptions\Msg91RateLimitException;
  *   $this->checkThrottle('otp:' . $mobile);   // throws if over limit
  *
  * @uses InteractsWithConfig
- *
- * @package Parvion\Msg91\Traits\Behaviors
  */
 trait ManagesThrottling
 {
@@ -36,13 +34,13 @@ trait ManagesThrottling
      *
      * @param  string  $identifier  Unique key for this throttle slot (e.g. 'otp:919876543210').
      *
-     * @throws Msg91RateLimitException  If the rate limit has been exceeded.
+     * @throws Msg91RateLimitException If the rate limit has been exceeded.
      */
     protected function checkThrottle(string $identifier): void
     {
         $maxAttempts = $this->getThrottleMaxAttempts();
-        $decay       = $this->getThrottleDecaySeconds();
-        $cacheKey    = $this->getRateLimitKey($identifier);
+        $decay = $this->getThrottleDecaySeconds();
+        $cacheKey = $this->getRateLimitKey($identifier);
 
         $attempts = (int) Cache::get($cacheKey, 0);
 
@@ -66,8 +64,6 @@ trait ManagesThrottling
     /**
      * Manually reset the throttle counter for a given identifier.
      * Useful in tests or when a user successfully verifies their OTP.
-     *
-     * @param  string  $identifier
      */
     protected function resetThrottle(string $identifier): void
     {
@@ -76,24 +72,20 @@ trait ManagesThrottling
 
     /**
      * Return the number of remaining attempts for a given identifier.
-     *
-     * @param  string  $identifier
      */
     protected function remainingAttempts(string $identifier): int
     {
         $maxAttempts = $this->getThrottleMaxAttempts();
-        $used        = (int) Cache::get($this->getRateLimitKey($identifier), 0);
+        $used = (int) Cache::get($this->getRateLimitKey($identifier), 0);
 
         return max(0, $maxAttempts - $used);
     }
 
     /**
      * Build the Cache key for a given throttle identifier.
-     *
-     * @param  string  $identifier
      */
     protected function getRateLimitKey(string $identifier): string
     {
-        return 'msg91:throttle:' . hash('xxh3', $identifier);
+        return 'msg91:throttle:'.hash('xxh3', $identifier);
     }
 }

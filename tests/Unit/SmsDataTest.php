@@ -17,7 +17,7 @@ class SmsDataTest extends TestCase
     public function test_constructor_creates_valid_instance(): void
     {
         $sms = new SmsData(
-            mobile:  '919876543210',
+            mobile: '919876543210',
             message: 'Hello World',
         );
 
@@ -32,9 +32,9 @@ class SmsDataTest extends TestCase
     public function test_from_array_with_route_enum(): void
     {
         $sms = new SmsData(
-            mobile:  '919876543210',
+            mobile: '919876543210',
             message: 'Promo offer!',
-            route:   SmsRoute::Promotional,
+            route: SmsRoute::Promotional,
         );
 
         $this->assertSame(SmsRoute::Promotional, $sms->route);
@@ -43,9 +43,9 @@ class SmsDataTest extends TestCase
     public function test_from_array_with_route_int(): void
     {
         $sms = new SmsData(
-            mobile:  '919876543210',
+            mobile: '919876543210',
             message: 'International',
-            route:   SmsRoute::International,
+            route: SmsRoute::International,
         );
 
         $this->assertSame(SmsRoute::International, $sms->route);
@@ -54,7 +54,7 @@ class SmsDataTest extends TestCase
     public function test_is_bulk_returns_true_for_array_mobile(): void
     {
         $sms = new SmsData(
-            mobile:  ['919876543210', '918765432109'],
+            mobile: ['919876543210', '918765432109'],
             message: 'Bulk',
         );
 
@@ -64,7 +64,7 @@ class SmsDataTest extends TestCase
     public function test_is_bulk_returns_false_for_string_mobile(): void
     {
         $sms = new SmsData(
-            mobile:  '919876543210',
+            mobile: '919876543210',
             message: 'Single',
         );
 
@@ -74,7 +74,7 @@ class SmsDataTest extends TestCase
     public function test_get_recipients_always_returns_array(): void
     {
         $sms = new SmsData(
-            mobile:  '919876543210',
+            mobile: '919876543210',
             message: 'Test',
         );
 
@@ -100,9 +100,9 @@ class SmsDataTest extends TestCase
     public function test_to_array_generates_sms_array_with_message(): void
     {
         $sms = new SmsData(
-            mobile:    '919876543210',
-            message:   'Hello {{name}}',
-            route:     SmsRoute::Transactional,
+            mobile: '919876543210',
+            message: 'Hello {{name}}',
+            route: SmsRoute::Transactional,
             variables: [['name' => 'Alice']],
         );
 

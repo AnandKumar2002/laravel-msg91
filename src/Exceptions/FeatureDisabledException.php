@@ -16,8 +16,6 @@ namespace Parvion\Msg91\Exceptions;
  *
  *   Msg91::sendWhatsApp($data);
  *   // throws: FeatureDisabledException — The [whatsapp] MSG91 feature is disabled.
- *
- * @package Parvion\Msg91\Exceptions
  */
 class FeatureDisabledException extends Msg91ApiException
 {
@@ -29,8 +27,8 @@ class FeatureDisabledException extends Msg91ApiException
     public static function make(string $feature): static
     {
         return new static(
-            "The [{$feature}] MSG91 feature is disabled. " .
-            "Enable it via MSG91_FEATURE_" . strtoupper($feature) . "=true in your .env file.",
+            "The [{$feature}] MSG91 feature is disabled. ".
+            'Enable it via MSG91_FEATURE_'.strtoupper($feature).'=true in your .env file.',
             403,
         );
     }

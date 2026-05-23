@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Parvion\Msg91\Events;
 
 use Carbon\CarbonImmutable;
+use Parvion\Msg91\Exceptions\FeatureDisabledException;
+use Parvion\Msg91\Exceptions\Msg91RateLimitException;
 
 /**
  * Class MessageFailed
@@ -25,8 +27,6 @@ use Carbon\CarbonImmutable;
  *   Event::listen(MessageFailed::class, function (MessageFailed $event) {
  *       Log::error("MSG91 {$event->channel} failed: " . $event->exception->getMessage());
  *   });
- *
- * @package Parvion\Msg91\Events
  */
 class MessageFailed
 {
@@ -39,12 +39,12 @@ class MessageFailed
         /**
          * The MSG91 channel that failed: 'otp', 'sms', 'email', 'whatsapp'.
          */
-        public readonly string     $channel,
+        public readonly string $channel,
 
         /**
          * The request payload that was attempted (sensitive fields already masked).
          */
-        public readonly array      $payload,
+        public readonly array $payload,
 
         /**
          * The exception that caused the failure.
@@ -55,7 +55,7 @@ class MessageFailed
         /**
          * The intended recipient (mobile number or email address).
          */
-        public readonly string     $recipient = '',
+        public readonly string $recipient = '',
     ) {
         $this->failedAt = CarbonImmutable::now('UTC');
     }
@@ -78,7 +78,7 @@ class MessageFailed
      */
     public function isRateLimited(): bool
     {
-        return $this->exception instanceof \Parvion\Msg91\Exceptions\Msg91RateLimitException;
+        return $this->exception instanceof Msg91RateLimitException;
     }
 
     /**
@@ -86,6 +86,6 @@ class MessageFailed
      */
     public function isFeatureDisabled(): bool
     {
-        return $this->exception instanceof \Parvion\Msg91\Exceptions\FeatureDisabledException;
+        return $this->exception instanceof FeatureDisabledException;
     }
 }

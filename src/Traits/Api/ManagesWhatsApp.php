@@ -8,6 +8,7 @@ use Parvion\Msg91\DTOs\WhatsAppData;
 use Parvion\Msg91\Events\MessageFailed;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
+use Parvion\Msg91\Exceptions\Msg91RateLimitException;
 use Parvion\Msg91\Support\PhoneNumberFormatter;
 
 /**
@@ -28,8 +29,6 @@ use Parvion\Msg91\Support\PhoneNumberFormatter;
  *   3. Normalise mobile number to E.164
  *   4. Execute with retry
  *   5. Dispatch MessageFailed on failure
- *
- * @package Parvion\Msg91\Traits\Api
  */
 trait ManagesWhatsApp
 {
@@ -40,10 +39,10 @@ trait ManagesWhatsApp
      * that a template_id is set.
      *
      * @param  WhatsAppData  $data  Strongly-typed WhatsApp payload.
-     * @return array                Normalised MSG91 response array.
+     * @return array Normalised MSG91 response array.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function sendWhatsApp(WhatsAppData $data): array
@@ -60,7 +59,7 @@ trait ManagesWhatsApp
         );
 
         // ── 3. Throttle guard ──────────────────────────────────────────────────
-        $this->checkThrottle('whatsapp:send:' . $formattedMobile);
+        $this->checkThrottle('whatsapp:send:'.$formattedMobile);
 
         // ── 4. Build payload with formatted mobile ─────────────────────────────
         $payload = $data->toArray();
@@ -76,11 +75,11 @@ trait ManagesWhatsApp
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'whatsapp',
-                payload:   [
-                    'mobile'      => $formattedMobile,
+                channel: 'whatsapp',
+                payload: [
+                    'mobile' => $formattedMobile,
                     'is_template' => $data->isTemplate(),
-                    'has_media'   => $data->hasMedia(),
+                    'has_media' => $data->hasMedia(),
                 ],
                 exception: $e,
                 recipient: $formattedMobile,
@@ -97,18 +96,18 @@ trait ManagesWhatsApp
      * messages to use pre-approved templates registered on the dashboard.
      *
      * @param  WhatsAppData  $data  Must have templateId set.
-     * @return array                Normalised MSG91 response array.
+     * @return array Normalised MSG91 response array.
      *
-     * @throws \InvalidArgumentException  If templateId is null.
+     * @throws \InvalidArgumentException If templateId is null.
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function sendWhatsAppTemplate(WhatsAppData $data): array
     {
         if (! $data->isTemplate()) {
             throw new \InvalidArgumentException(
-                'sendWhatsAppTemplate() requires a WhatsAppData with template_id set. ' .
+                'sendWhatsAppTemplate() requires a WhatsAppData with template_id set. '.
                 'For plain text messages, use sendWhatsApp() instead.'
             );
         }

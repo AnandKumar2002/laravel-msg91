@@ -12,8 +12,6 @@ namespace Parvion\Msg91\Enums;
  *
  * Usage:
  *   Msg91::retryOtp('919876543210', OtpRetryType::Voice);
- *
- * @package Parvion\Msg91\Enums
  */
 enum OtpRetryType: string
 {

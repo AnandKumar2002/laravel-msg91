@@ -13,8 +13,6 @@ namespace Parvion\Msg91\Traits\Behaviors;
  *
  * All methods read live from the Laravel config so that runtime changes
  * (e.g. in tests via config()->set()) are reflected immediately.
- *
- * @package Parvion\Msg91\Traits\Behaviors
  */
 trait InteractsWithConfig
 {
@@ -35,7 +33,7 @@ trait InteractsWithConfig
     {
         $url = (string) config('msg91.base_url', 'https://api.msg91.com/api/v5/');
 
-        return rtrim($url, '/') . '/';
+        return rtrim($url, '/').'/';
     }
 
     /**

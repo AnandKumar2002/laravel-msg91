@@ -13,8 +13,6 @@ use Parvion\Msg91\Logging\Contracts\LogDriverInterface;
  * Active when config('msg91.logging.driver') = 'null'.
  *
  * No database writes, no log channel writes, no performance impact.
- *
- * @package Parvion\Msg91\Logging\Drivers
  */
 class NullLogDriver implements LogDriverInterface
 {
@@ -22,22 +20,22 @@ class NullLogDriver implements LogDriverInterface
         string $channel,
         string $action,
         string $recipient,
-        array  $request,
-        array  $response,
-        int    $httpStatus,
-        int    $durationMs,
+        array $request,
+        array $response,
+        int $httpStatus,
+        int $durationMs,
     ): void {
         // Intentionally empty — /dev/null for MSG91 logs
     }
 
     public function logFailure(
-        string     $channel,
-        string     $action,
-        string     $recipient,
-        array      $request,
+        string $channel,
+        string $action,
+        string $recipient,
+        array $request,
         \Throwable $exception,
-        ?int       $httpStatus,
-        int        $durationMs,
+        ?int $httpStatus,
+        int $durationMs,
     ): void {
         // Intentionally empty — /dev/null for MSG91 logs
     }

@@ -18,8 +18,6 @@ use InvalidArgumentException;
  *   '+919876543210'  → '919876543210'  (plus stripped)
  *   '09876543210'    → '919876543210'  (leading 0 stripped, code prepended)
  *   '919876543210'   → '919876543210'  (already correct, passthrough)
- *
- * @package Parvion\Msg91\Support
  */
 class PhoneNumberFormatter
 {
@@ -40,16 +38,16 @@ class PhoneNumberFormatter
     /**
      * Format a phone number into MSG91-ready format (E.164 without the +).
      *
-     * @param  string  $mobile          Raw phone number in any common format.
-     * @param  string|null  $countryCode Override country code (default from config).
-     * @return string                   Formatted number: '{countryCode}{localNumber}'.
+     * @param  string  $mobile  Raw phone number in any common format.
+     * @param  string|null  $countryCode  Override country code (default from config).
+     * @return string Formatted number: '{countryCode}{localNumber}'.
      *
-     * @throws InvalidArgumentException  If the number cannot be normalised.
+     * @throws InvalidArgumentException If the number cannot be normalised.
      */
     public function format(string $mobile, ?string $countryCode = null): string
     {
         $countryCode = $countryCode ?? $this->defaultCountryCode;
-        $cleaned     = $this->clean($mobile);
+        $cleaned = $this->clean($mobile);
 
         if (! $this->isValidCleaned($cleaned)) {
             throw new InvalidArgumentException(
@@ -67,7 +65,7 @@ class PhoneNumberFormatter
             }
         }
 
-        return $countryCode . $cleaned;
+        return $countryCode.$cleaned;
     }
 
     /**
@@ -94,14 +92,14 @@ class PhoneNumberFormatter
     /**
      * Strip the country code prefix from a fully-qualified number.
      *
-     * @param  string  $mobile       E.g. '919876543210'
+     * @param  string  $mobile  E.g. '919876543210'
      * @param  string|null  $countryCode  Country code to strip (default from config).
-     * @return string                 Local number: '9876543210'
+     * @return string Local number: '9876543210'
      */
     public function stripCountryCode(string $mobile, ?string $countryCode = null): string
     {
         $countryCode = $countryCode ?? $this->defaultCountryCode;
-        $cleaned     = $this->clean($mobile);
+        $cleaned = $this->clean($mobile);
 
         if (str_starts_with($cleaned, $countryCode)) {
             return substr($cleaned, strlen($countryCode));
@@ -112,21 +110,17 @@ class PhoneNumberFormatter
 
     /**
      * Prepend the country code if it is not already present.
-     *
-     * @param  string  $mobile
-     * @param  string|null  $countryCode
-     * @return string
      */
     public function prependCountryCode(string $mobile, ?string $countryCode = null): string
     {
         $countryCode = $countryCode ?? $this->defaultCountryCode;
-        $cleaned     = $this->clean($mobile);
+        $cleaned = $this->clean($mobile);
 
         if (str_starts_with($cleaned, $countryCode)) {
             return $cleaned;
         }
 
-        return $countryCode . $cleaned;
+        return $countryCode.$cleaned;
     }
 
     /**
@@ -134,7 +128,6 @@ class PhoneNumberFormatter
      * Invalid numbers are silently skipped.
      *
      * @param  string[]  $mobiles
-     * @param  string|null  $countryCode
      * @return string[]
      */
     public function formatMany(array $mobiles, ?string $countryCode = null): array

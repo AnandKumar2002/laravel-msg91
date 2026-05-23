@@ -23,8 +23,6 @@ use Parvion\Msg91\Logging\Contracts\LogDriverInterface;
  *   If the table doesn't exist or the database is unreachable, the driver
  *   catches the QueryException and falls back to a Log::warning() message.
  *   MSG91 API calls are NEVER interrupted by logging failures.
- *
- * @package Parvion\Msg91\Logging\Drivers
  */
 class DatabaseLogDriver implements LogDriverInterface
 {
@@ -37,47 +35,47 @@ class DatabaseLogDriver implements LogDriverInterface
         string $channel,
         string $action,
         string $recipient,
-        array  $request,
-        array  $response,
-        int    $httpStatus,
-        int    $durationMs,
+        array $request,
+        array $response,
+        int $httpStatus,
+        int $durationMs,
     ): void {
         $this->insert([
-            'channel'          => $channel,
-            'action'           => $action,
-            'recipient'        => $this->truncateString($recipient, 255),
-            'request_payload'  => $this->safeJsonEncode($request),
+            'channel' => $channel,
+            'action' => $action,
+            'recipient' => $this->truncateString($recipient, 255),
+            'request_payload' => $this->safeJsonEncode($request),
             'response_payload' => $this->safeJsonEncode($response),
-            'http_status'      => $httpStatus,
-            'status'           => 'success',
-            'error_message'    => null,
-            'duration_ms'      => $durationMs,
-            'created_at'       => now(),
-            'updated_at'       => now(),
+            'http_status' => $httpStatus,
+            'status' => 'success',
+            'error_message' => null,
+            'duration_ms' => $durationMs,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
     public function logFailure(
-        string     $channel,
-        string     $action,
-        string     $recipient,
-        array      $request,
+        string $channel,
+        string $action,
+        string $recipient,
+        array $request,
         \Throwable $exception,
-        ?int       $httpStatus,
-        int        $durationMs,
+        ?int $httpStatus,
+        int $durationMs,
     ): void {
         $this->insert([
-            'channel'          => $channel,
-            'action'           => $action,
-            'recipient'        => $this->truncateString($recipient, 255),
-            'request_payload'  => $this->safeJsonEncode($request),
+            'channel' => $channel,
+            'action' => $action,
+            'recipient' => $this->truncateString($recipient, 255),
+            'request_payload' => $this->safeJsonEncode($request),
             'response_payload' => null,
-            'http_status'      => $httpStatus,
-            'status'           => 'failed',
-            'error_message'    => $this->truncateString($exception->getMessage(), 65535),
-            'duration_ms'      => $durationMs,
-            'created_at'       => now(),
-            'updated_at'       => now(),
+            'http_status' => $httpStatus,
+            'status' => 'failed',
+            'error_message' => $this->truncateString($exception->getMessage(), 65535),
+            'duration_ms' => $durationMs,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -94,13 +92,13 @@ class DatabaseLogDriver implements LogDriverInterface
             DB::table(self::TABLE)->insert($row);
         } catch (QueryException $e) {
             // Graceful degradation: log the failure but don't interrupt the API call
-            Log::warning('[MSG91] DatabaseLogDriver insert failed: ' . $e->getMessage(), [
+            Log::warning('[MSG91] DatabaseLogDriver insert failed: '.$e->getMessage(), [
                 'channel' => $row['channel'] ?? 'unknown',
-                'action'  => $row['action'] ?? 'unknown',
+                'action' => $row['action'] ?? 'unknown',
             ]);
         } catch (\Throwable $e) {
             // Catch any unexpected error — never let logging break API calls
-            Log::warning('[MSG91] DatabaseLogDriver unexpected error: ' . $e->getMessage());
+            Log::warning('[MSG91] DatabaseLogDriver unexpected error: '.$e->getMessage());
         }
     }
 
@@ -123,6 +121,6 @@ class DatabaseLogDriver implements LogDriverInterface
             return $value;
         }
 
-        return substr($value, 0, $maxLength - 3) . '...';
+        return substr($value, 0, $maxLength - 3).'...';
     }
 }

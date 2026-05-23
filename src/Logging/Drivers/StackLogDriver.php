@@ -20,8 +20,6 @@ use Parvion\Msg91\Logging\Contracts\LogDriverInterface;
  *   fails, DatabaseLogDriver still executes (and vice versa). This
  *   guarantees that a broken log channel never causes data loss in the
  *   database log, and a missing migration never silences channel logs.
- *
- * @package Parvion\Msg91\Logging\Drivers
  */
 class StackLogDriver implements LogDriverInterface
 {
@@ -42,10 +40,10 @@ class StackLogDriver implements LogDriverInterface
         string $channel,
         string $action,
         string $recipient,
-        array  $request,
-        array  $response,
-        int    $httpStatus,
-        int    $durationMs,
+        array $request,
+        array $response,
+        int $httpStatus,
+        int $durationMs,
     ): void {
         foreach ($this->drivers as $driver) {
             try {
@@ -61,13 +59,13 @@ class StackLogDriver implements LogDriverInterface
     }
 
     public function logFailure(
-        string     $channel,
-        string     $action,
-        string     $recipient,
-        array      $request,
+        string $channel,
+        string $action,
+        string $recipient,
+        array $request,
         \Throwable $exception,
-        ?int       $httpStatus,
-        int        $durationMs,
+        ?int $httpStatus,
+        int $durationMs,
     ): void {
         foreach ($this->drivers as $driver) {
             try {
@@ -87,8 +85,8 @@ class StackLogDriver implements LogDriverInterface
      */
     private function reportDriverFailure(
         LogDriverInterface $driver,
-        string             $method,
-        \Throwable         $e,
+        string $method,
+        \Throwable $e,
     ): void {
         $driverClass = get_class($driver);
 

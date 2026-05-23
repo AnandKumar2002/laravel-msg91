@@ -31,8 +31,6 @@ use Parvion\Msg91\Testing\Msg91Fake;
  *   - Msg91::class
  *   - OtpServiceInterface::class
  *   - SmsServiceInterface::class
- *
- * @package Parvion\Msg91\Traits\Behaviors
  */
 trait FakesMsg91
 {
@@ -43,11 +41,11 @@ trait FakesMsg91
      * so that both Facade usage and dependency injection resolve to
      * the same Msg91Fake instance.
      *
-     * @return Msg91Fake  The fake instance — call assertion methods on it.
+     * @return Msg91Fake The fake instance — call assertion methods on it.
      */
     public static function fake(): Msg91Fake
     {
-        $fake = new Msg91Fake();
+        $fake = new Msg91Fake;
 
         // Replace the Msg91 singleton binding
         app()->instance(Msg91::class, $fake);

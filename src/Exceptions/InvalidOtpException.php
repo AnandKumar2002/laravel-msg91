@@ -19,19 +19,19 @@ use Illuminate\Http\Client\Response;
  *   } catch (InvalidOtpException $e) {
  *       // $e->isExpired(), $e->isIncorrect(), $e->isAlreadyUsed()
  *   }
- *
- * @package Parvion\Msg91\Exceptions
  */
 class InvalidOtpException extends Msg91ApiException
 {
-    private const REASON_EXPIRED     = 'expired';
-    private const REASON_INCORRECT   = 'incorrect';
+    private const REASON_EXPIRED = 'expired';
+
+    private const REASON_INCORRECT = 'incorrect';
+
     private const REASON_ALREADY_USED = 'already_used';
 
     public function __construct(
-        string      $message = 'Invalid OTP.',
-        int         $statusCode = 400,
-        array       $responseBody = [],
+        string $message = 'Invalid OTP.',
+        int $statusCode = 400,
+        array $responseBody = [],
         private readonly string $reason = self::REASON_INCORRECT,
         ?\Throwable $previous = null,
     ) {
@@ -87,7 +87,7 @@ class InvalidOtpException extends Msg91ApiException
      */
     public static function fromResponse(Response $response): static
     {
-        $body    = $response->json() ?? [];
+        $body = $response->json() ?? [];
         $message = strtolower($body['message'] ?? '');
 
         if (str_contains($message, 'expir')) {

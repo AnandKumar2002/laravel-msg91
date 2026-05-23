@@ -29,8 +29,6 @@ use Parvion\Msg91\Logging\Drivers\StackLogDriver;
  * Usage (manual):
  *   $manager = app(LogDriverManager::class);
  *   $manager->driver()->logSuccess(...);
- *
- * @package Parvion\Msg91\Logging
  */
 class LogDriverManager
 {
@@ -52,13 +50,13 @@ class LogDriverManager
         $driverName = config('msg91.logging.driver', 'null');
 
         $this->resolved = match ($driverName) {
-            'null'     => new NullLogDriver(),
-            'log'      => new ChannelLogDriver(),
-            'database' => new DatabaseLogDriver(),
-            'stack'    => new StackLogDriver(new ChannelLogDriver(), new DatabaseLogDriver()),
-            default    => throw new InvalidArgumentException(
-                "MSG91 logging driver [{$driverName}] is not supported. " .
-                "Supported drivers: null, log, database, stack."
+            'null' => new NullLogDriver,
+            'log' => new ChannelLogDriver,
+            'database' => new DatabaseLogDriver,
+            'stack' => new StackLogDriver(new ChannelLogDriver, new DatabaseLogDriver),
+            default => throw new InvalidArgumentException(
+                "MSG91 logging driver [{$driverName}] is not supported. ".
+                'Supported drivers: null, log, database, stack.'
             ),
         };
 
@@ -72,10 +70,10 @@ class LogDriverManager
         string $channel,
         string $action,
         string $recipient,
-        array  $request,
-        array  $response,
-        int    $httpStatus,
-        int    $durationMs,
+        array $request,
+        array $response,
+        int $httpStatus,
+        int $durationMs,
     ): void {
         $this->driver()->logSuccess(
             $channel, $action, $recipient,
@@ -87,13 +85,13 @@ class LogDriverManager
      * Proxy logFailure to the resolved driver.
      */
     public function logFailure(
-        string     $channel,
-        string     $action,
-        string     $recipient,
-        array      $request,
+        string $channel,
+        string $action,
+        string $recipient,
+        array $request,
         \Throwable $exception,
-        ?int       $httpStatus,
-        int        $durationMs,
+        ?int $httpStatus,
+        int $durationMs,
     ): void {
         $this->driver()->logFailure(
             $channel, $action, $recipient,

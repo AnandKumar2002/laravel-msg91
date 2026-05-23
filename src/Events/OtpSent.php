@@ -20,8 +20,6 @@ use Parvion\Msg91\DTOs\OtpData;
  *   Event::listen(OtpSent::class, function (OtpSent $event) {
  *       Log::info('OTP sent to ' . $event->otpData->mobile);
  *   });
- *
- * @package Parvion\Msg91\Events
  */
 class OtpSent
 {

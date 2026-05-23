@@ -60,7 +60,7 @@ return [
     |
     */
     'retry' => [
-        'attempts'           => (int) env('MSG91_RETRY_ATTEMPTS', 3),
+        'attempts' => (int) env('MSG91_RETRY_ATTEMPTS', 3),
         'sleep_milliseconds' => (int) env('MSG91_RETRY_SLEEP_MS', 200),
     ],
 
@@ -73,8 +73,8 @@ return [
     |
     */
     'throttle' => [
-        'max_attempts'   => (int) env('MSG91_THROTTLE_MAX', 60),
-        'decay_seconds'  => (int) env('MSG91_THROTTLE_DECAY', 60),
+        'max_attempts' => (int) env('MSG91_THROTTLE_MAX', 60),
+        'decay_seconds' => (int) env('MSG91_THROTTLE_DECAY', 60),
     ],
 
     /*
@@ -94,9 +94,9 @@ return [
     |
     */
     'logging' => [
-        'driver'  => env('MSG91_LOG_DRIVER', 'null'),   // null | log | database | stack
+        'driver' => env('MSG91_LOG_DRIVER', 'null'),   // null | log | database | stack
         'channel' => env('MSG91_LOG_CHANNEL', null),
-        'level'   => env('MSG91_LOG_LEVEL', 'info'),
+        'level' => env('MSG91_LOG_LEVEL', 'info'),
     ],
 
     /*
@@ -108,10 +108,10 @@ return [
     |
     */
     'features' => [
-        'otp'       => (bool) env('MSG91_FEATURE_OTP', true),
-        'sms'       => (bool) env('MSG91_FEATURE_SMS', true),
-        'email'     => (bool) env('MSG91_FEATURE_EMAIL', true),
-        'whatsapp'  => (bool) env('MSG91_FEATURE_WHATSAPP', true),
+        'otp' => (bool) env('MSG91_FEATURE_OTP', true),
+        'sms' => (bool) env('MSG91_FEATURE_SMS', true),
+        'email' => (bool) env('MSG91_FEATURE_EMAIL', true),
+        'whatsapp' => (bool) env('MSG91_FEATURE_WHATSAPP', true),
     ],
 
     /*
@@ -123,8 +123,8 @@ return [
     */
     'otp' => [
         'template_id' => env('MSG91_OTP_TEMPLATE_ID', ''),
-        'otp_length'  => (int) env('MSG91_OTP_LENGTH', 6),
-        'otp_expiry'  => (int) env('MSG91_OTP_EXPIRY', 10), // minutes
+        'otp_length' => (int) env('MSG91_OTP_LENGTH', 6),
+        'otp_expiry' => (int) env('MSG91_OTP_EXPIRY', 10), // minutes
     ],
 
     /*
@@ -134,9 +134,9 @@ return [
     |
     */
     'sms' => [
-        'route'       => env('MSG91_SMS_ROUTE', 4), // 4 = transactional
-        'unicode'     => (bool) env('MSG91_SMS_UNICODE', false),
-        'flash'       => (bool) env('MSG91_SMS_FLASH', false),
+        'route' => env('MSG91_SMS_ROUTE', 4), // 4 = transactional
+        'unicode' => (bool) env('MSG91_SMS_UNICODE', false),
+        'flash' => (bool) env('MSG91_SMS_FLASH', false),
     ],
 
     /*
@@ -149,7 +149,7 @@ return [
     */
     'queue' => [
         'connection' => env('MSG91_QUEUE_CONNECTION', null),
-        'queue'      => env('MSG91_QUEUE_NAME', 'default'),
+        'queue' => env('MSG91_QUEUE_NAME', 'default'),
     ],
 
 ];

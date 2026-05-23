@@ -16,18 +16,16 @@ use Illuminate\Http\Client\Response;
  *      before it is even sent to the API.
  *
  * Check getRetryAfter() to know how many seconds the caller should wait.
- *
- * @package Parvion\Msg91\Exceptions
  */
 class Msg91RateLimitException extends Msg91ApiException
 {
     private int $retryAfter;
 
     public function __construct(
-        string      $message = 'Rate limit exceeded.',
-        int         $statusCode = 429,
-        array       $responseBody = [],
-        int         $retryAfter = 0,
+        string $message = 'Rate limit exceeded.',
+        int $statusCode = 429,
+        array $responseBody = [],
+        int $retryAfter = 0,
         ?\Throwable $previous = null,
     ) {
         parent::__construct($message, $statusCode, $responseBody, $previous);
@@ -40,8 +38,8 @@ class Msg91RateLimitException extends Msg91ApiException
      */
     public static function fromResponse(Response $response): static
     {
-        $body       = $response->json() ?? [];
-        $message    = $body['message'] ?? 'Too many requests. Please try again later.';
+        $body = $response->json() ?? [];
+        $message = $body['message'] ?? 'Too many requests. Please try again later.';
         $retryAfter = (int) ($response->header('Retry-After') ?? 60);
 
         return new static($message, 429, $body, $retryAfter);
@@ -52,7 +50,7 @@ class Msg91RateLimitException extends Msg91ApiException
      * (i.e., the request was never sent to MSG91).
      *
      * @param  string  $identifier  The throttle key (e.g. mobile number or IP).
-     * @param  int     $retryAfter  Seconds remaining in the throttle window.
+     * @param  int  $retryAfter  Seconds remaining in the throttle window.
      */
     public static function localThrottle(string $identifier, int $retryAfter = 60): static
     {

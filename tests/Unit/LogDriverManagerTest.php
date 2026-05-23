@@ -31,11 +31,11 @@ class LogDriverManagerTest extends TestCase
         $this->app['config']->set('msg91.logging.driver', 'null');
 
         $this->manager->logSuccess(
-            channel:    'otp',
-            action:     'send_otp',
-            recipient:  '919876543210',
-            request:    ['mobile' => '919876543210'],
-            response:   ['type' => 'success'],
+            channel: 'otp',
+            action: 'send_otp',
+            recipient: '919876543210',
+            request: ['mobile' => '919876543210'],
+            response: ['type' => 'success'],
             httpStatus: 200,
             durationMs: 150,
         );
@@ -49,11 +49,11 @@ class LogDriverManagerTest extends TestCase
         $this->app['config']->set('msg91.logging.driver', 'null');
 
         $this->manager->logFailure(
-            channel:    'sms',
-            action:     'send_sms',
-            recipient:  '919876543210',
-            request:    ['mobile' => '919876543210'],
-            exception:  new \RuntimeException('Connection timeout'),
+            channel: 'sms',
+            action: 'send_sms',
+            recipient: '919876543210',
+            request: ['mobile' => '919876543210'],
+            exception: new \RuntimeException('Connection timeout'),
             httpStatus: null,
             durationMs: 5000,
         );
@@ -66,14 +66,14 @@ class LogDriverManagerTest extends TestCase
         $this->app['config']->set('msg91.logging.driver', 'log');
 
         // Recreate to pick up new config
-        $manager = new LogDriverManager();
+        $manager = new LogDriverManager;
 
         $manager->logSuccess(
-            channel:    'otp',
-            action:     'verify_otp',
-            recipient:  '919876543210',
-            request:    ['mobile' => '919876543210', 'otp' => '123456'],
-            response:   ['type' => 'success', 'message' => 'OTP verified'],
+            channel: 'otp',
+            action: 'verify_otp',
+            recipient: '919876543210',
+            request: ['mobile' => '919876543210', 'otp' => '123456'],
+            response: ['type' => 'success', 'message' => 'OTP verified'],
             httpStatus: 200,
             durationMs: 85,
         );

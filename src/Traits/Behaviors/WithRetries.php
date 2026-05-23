@@ -25,8 +25,6 @@ use Parvion\Msg91\Exceptions\Msg91RateLimitException;
  *   msg91.retry.sleep_milliseconds (default: 200ms)
  *
  * @uses InteractsWithConfig
- *
- * @package Parvion\Msg91\Traits\Behaviors
  */
 trait WithRetries
 {
@@ -34,14 +32,15 @@ trait WithRetries
      * Execute $callback with automatic retry on transient failures.
      *
      * @template T
+     *
      * @param  callable(): T  $callback
      * @return T
      *
-     * @throws Msg91ApiException  Re-throws the last exception after all attempts are exhausted.
+     * @throws Msg91ApiException Re-throws the last exception after all attempts are exhausted.
      */
     protected function withRetry(callable $callback): mixed
     {
-        $attempts  = $this->getRetryAttempts();
+        $attempts = $this->getRetryAttempts();
         $sleepBase = $this->getRetrySleepMs();
 
         $lastException = null;

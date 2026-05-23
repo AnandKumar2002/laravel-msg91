@@ -25,14 +25,12 @@ use InvalidArgumentException;
  *       'template_id' => 'your-wa-template-id',
  *       'variables'   => ['name' => 'Alice', 'order' => '#12345'],
  *   ]);
- *
- * @package Parvion\Msg91\DTOs
  */
 class WhatsAppData
 {
     public function __construct(
         /** Recipient mobile number in E.164 format (e.g. '919876543210'). */
-        public readonly string  $mobile,
+        public readonly string $mobile,
 
         /** Plain text message body. Required if $templateId is null. */
         public readonly ?string $message = null,
@@ -44,7 +42,7 @@ class WhatsAppData
          * Template variable substitutions (key → value pairs).
          * e.g. ['name' => 'Alice', 'order_id' => 'ORD-001']
          */
-        public readonly array   $variables = [],
+        public readonly array $variables = [],
 
         /**
          * URL of a media file to send (image, video, document).
@@ -87,13 +85,13 @@ class WhatsAppData
     public static function fromArray(array $data): self
     {
         return new self(
-            mobile:     $data['mobile'] ?? '',
-            message:    $data['message'] ?? null,
+            mobile: $data['mobile'] ?? '',
+            message: $data['message'] ?? null,
             templateId: $data['template_id'] ?? null,
-            variables:  $data['variables'] ?? [],
-            mediaUrl:   $data['media_url'] ?? null,
-            mediaType:  $data['media_type'] ?? null,
-            caption:    $data['caption'] ?? null,
+            variables: $data['variables'] ?? [],
+            mediaUrl: $data['media_url'] ?? null,
+            mediaType: $data['media_type'] ?? null,
+            caption: $data['caption'] ?? null,
         );
     }
 

@@ -21,8 +21,6 @@ use InvalidArgumentException;
  *   ]);
  *
  *   Msg91::sendEmail($email);
- *
- * @package Parvion\Msg91\DTOs
  */
 class EmailData
 {
@@ -34,37 +32,37 @@ class EmailData
         public readonly string|array $to,
 
         /** Email subject line. */
-        public readonly string       $subject,
+        public readonly string $subject,
 
         /** MSG91 email template ID. */
-        public readonly string       $templateId,
+        public readonly string $templateId,
 
         /**
          * Template variable substitutions (key → value pairs).
          * e.g. ['name' => 'Alice', 'order_id' => '12345']
          */
-        public readonly array        $variables = [],
+        public readonly array $variables = [],
 
         /**
          * From email address. Falls back to MSG91 account default if null.
          */
-        public readonly ?string      $from = null,
+        public readonly ?string $from = null,
 
         /**
          * Display name for the From address.
          */
-        public readonly ?string      $fromName = null,
+        public readonly ?string $fromName = null,
 
         /**
          * Reply-To email address. Optional.
          */
-        public readonly ?string      $replyTo = null,
+        public readonly ?string $replyTo = null,
 
         /**
          * Attachments as an array of absolute file paths or URLs.
          * MSG91 accepts publicly accessible URLs for attachments.
          */
-        public readonly array        $attachments = [],
+        public readonly array $attachments = [],
     ) {
         $recipients = is_array($this->to) ? $this->to : [$this->to];
 
@@ -90,13 +88,13 @@ class EmailData
     public static function fromArray(array $data): self
     {
         return new self(
-            to:          $data['to'] ?? '',
-            subject:     $data['subject'] ?? '',
-            templateId:  $data['template_id'] ?? '',
-            variables:   $data['variables'] ?? [],
-            from:        $data['from'] ?? null,
-            fromName:    $data['from_name'] ?? null,
-            replyTo:     $data['reply_to'] ?? null,
+            to: $data['to'] ?? '',
+            subject: $data['subject'] ?? '',
+            templateId: $data['template_id'] ?? '',
+            variables: $data['variables'] ?? [],
+            from: $data['from'] ?? null,
+            fromName: $data['from_name'] ?? null,
+            replyTo: $data['reply_to'] ?? null,
             attachments: $data['attachments'] ?? [],
         );
     }
@@ -109,8 +107,8 @@ class EmailData
         $recipients = is_array($this->to) ? $this->to : [$this->to];
 
         $payload = [
-            'to'          => array_map(fn ($email) => ['email' => $email], $recipients),
-            'subject'     => $this->subject,
+            'to' => array_map(fn ($email) => ['email' => $email], $recipients),
+            'subject' => $this->subject,
             'template_id' => $this->templateId,
         ];
 

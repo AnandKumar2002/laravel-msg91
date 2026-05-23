@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Parvion\Msg91\Tests\Unit;
 
 use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
 use Parvion\Msg91\Support\PhoneNumberFormatter;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests for PhoneNumberFormatter.

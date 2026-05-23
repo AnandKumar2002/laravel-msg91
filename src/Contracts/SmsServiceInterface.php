@@ -14,8 +14,6 @@ use Parvion\Msg91\Exceptions\Msg91RateLimitException;
  *
  * Defines the public contract for SMS operations.
  * Both the real Msg91 class (via ManagesSms trait) and Msg91Fake must satisfy this contract.
- *
- * @package Parvion\Msg91\Contracts
  */
 interface SmsServiceInterface
 {
@@ -23,11 +21,11 @@ interface SmsServiceInterface
      * Send a single SMS to one or more recipients defined in SmsData.
      *
      * @param  SmsData  $data  Strongly-typed SMS payload (recipients, message, route, sender).
-     * @return array           Normalised MSG91 response array.
+     * @return array Normalised MSG91 response array.
      *
-     * @throws FeatureDisabledException  If the SMS channel is disabled in config.
-     * @throws Msg91RateLimitException   If the local throttle or MSG91 rejects the request.
-     * @throws Msg91ApiException         On any other API-level error.
+     * @throws FeatureDisabledException If the SMS channel is disabled in config.
+     * @throws Msg91RateLimitException If the local throttle or MSG91 rejects the request.
+     * @throws Msg91ApiException On any other API-level error.
      */
     public function sendSms(SmsData $data): array;
 
@@ -38,12 +36,12 @@ interface SmsServiceInterface
      * array overrides any recipients already set inside $data.
      *
      * @param  string[]  $recipients  Array of mobile numbers in E.164 format.
-     * @param  SmsData   $data        Shared SMS configuration (message, route, sender, variables).
-     * @return array                  Normalised MSG91 response array.
+     * @param  SmsData  $data  Shared SMS configuration (message, route, sender, variables).
+     * @return array Normalised MSG91 response array.
      *
-     * @throws FeatureDisabledException  If the SMS channel is disabled in config.
-     * @throws Msg91RateLimitException   If the local throttle or MSG91 rejects the request.
-     * @throws Msg91ApiException         On any other API-level error.
+     * @throws FeatureDisabledException If the SMS channel is disabled in config.
+     * @throws Msg91RateLimitException If the local throttle or MSG91 rejects the request.
+     * @throws Msg91ApiException On any other API-level error.
      */
     public function sendBulkSms(array $recipients, SmsData $data): array;
 
@@ -51,10 +49,10 @@ interface SmsServiceInterface
      * Check the delivery status of a previously sent SMS campaign.
      *
      * @param  string  $requestId  The MSG91 campaign/request ID returned from sendSms().
-     * @return array               Normalised delivery status response array.
+     * @return array Normalised delivery status response array.
      *
-     * @throws FeatureDisabledException  If the SMS channel is disabled in config.
-     * @throws Msg91ApiException         On any other API-level error.
+     * @throws FeatureDisabledException If the SMS channel is disabled in config.
+     * @throws Msg91ApiException On any other API-level error.
      */
     public function checkDeliveryStatus(string $requestId): array;
 }

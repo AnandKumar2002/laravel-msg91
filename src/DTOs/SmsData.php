@@ -25,8 +25,6 @@ use Parvion\Msg91\Enums\SmsRoute;
  *       'message' => 'Your order #{{order_id}} has been shipped.',
  *       'variables' => [['order_id' => 'ORD-001'], ['order_id' => 'ORD-002']],
  *   ]);
- *
- * @package Parvion\Msg91\DTOs
  */
 class SmsData
 {
@@ -38,29 +36,29 @@ class SmsData
         public readonly string|array $mobile,
 
         /** The SMS message body. Use {{variable}} placeholders for templates. */
-        public readonly string       $message,
+        public readonly string $message,
 
         /** MSG91 routing type. Default: Transactional (route 4). */
-        public readonly SmsRoute     $route = SmsRoute::Transactional,
+        public readonly SmsRoute $route = SmsRoute::Transactional,
 
         /**
          * Sender ID. Defaults to config('msg91.sender_id') if null.
          * Must be exactly 6 alphanumeric characters.
          */
-        public readonly ?string      $senderId = null,
+        public readonly ?string $senderId = null,
 
         /** Send as Unicode (required for non-Latin scripts like Hindi, Arabic). */
-        public readonly bool         $unicode = false,
+        public readonly bool $unicode = false,
 
         /** Send as a flash message (displays immediately without saving). */
-        public readonly bool         $flash = false,
+        public readonly bool $flash = false,
 
         /**
          * Per-recipient template variable sets.
          * For bulk sends, each index maps to the corresponding $mobile entry.
          * e.g. [['name' => 'Alice'], ['name' => 'Bob']]
          */
-        public readonly array        $variables = [],
+        public readonly array $variables = [],
     ) {
         $recipients = is_array($this->mobile) ? $this->mobile : [$this->mobile];
 
@@ -92,12 +90,12 @@ class SmsData
         }
 
         return new self(
-            mobile:    $data['mobile'] ?? '',
-            message:   $data['message'] ?? '',
-            route:     $smsRoute,
-            senderId:  $data['sender_id'] ?? null,
-            unicode:   (bool) ($data['unicode'] ?? config('msg91.sms.unicode', false)),
-            flash:     (bool) ($data['flash'] ?? config('msg91.sms.flash', false)),
+            mobile: $data['mobile'] ?? '',
+            message: $data['message'] ?? '',
+            route: $smsRoute,
+            senderId: $data['sender_id'] ?? null,
+            unicode: (bool) ($data['unicode'] ?? config('msg91.sms.unicode', false)),
+            flash: (bool) ($data['flash'] ?? config('msg91.sms.flash', false)),
             variables: $data['variables'] ?? [],
         );
     }
@@ -108,21 +106,21 @@ class SmsData
     public function toArray(): array
     {
         $recipients = is_array($this->mobile) ? $this->mobile : [$this->mobile];
-        $senderId   = $this->senderId ?? config('msg91.sender_id', '');
+        $senderId = $this->senderId ?? config('msg91.sender_id', '');
 
         $payload = [
-            'sender'    => $senderId,
-            'route'     => $this->route->value,
-            'country'   => config('msg91.default_country_code', '91'),
-            'unicode'   => $this->unicode ? '1' : '0',
-            'flash'     => $this->flash ? '1' : '0',
-            'sms'       => [],
+            'sender' => $senderId,
+            'route' => $this->route->value,
+            'country' => config('msg91.default_country_code', '91'),
+            'unicode' => $this->unicode ? '1' : '0',
+            'flash' => $this->flash ? '1' : '0',
+            'sms' => [],
         ];
 
         foreach ($recipients as $index => $number) {
             $sms = [
                 'message' => $this->buildMessage($index),
-                'to'      => [$number],
+                'to' => [$number],
             ];
             $payload['sms'][] = $sms;
         }
@@ -139,11 +137,11 @@ class SmsData
             return $this->message;
         }
 
-        $vars    = $this->variables[$index] ?? $this->variables[0] ?? [];
+        $vars = $this->variables[$index] ?? $this->variables[0] ?? [];
         $message = $this->message;
 
         foreach ($vars as $key => $value) {
-            $message = str_replace('{{' . $key . '}}', (string) $value, $message);
+            $message = str_replace('{{'.$key.'}}', (string) $value, $message);
         }
 
         return $message;

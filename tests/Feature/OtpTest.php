@@ -29,7 +29,7 @@ class OtpTest extends TestCase
     public function test_send_otp_records_the_call(): void
     {
         $otp = OtpData::fromArray([
-            'mobile'      => '919876543210',
+            'mobile' => '919876543210',
             'template_id' => 'tpl_test_123',
         ]);
 
@@ -112,13 +112,13 @@ class OtpTest extends TestCase
     public function test_fake_returns_custom_response(): void
     {
         $this->fake->respondWith([
-            'type'    => 'success',
+            'type' => 'success',
             'message' => 'OTP sent to 919876543210',
-            'data'    => ['request_id' => 'req_abc'],
+            'data' => ['request_id' => 'req_abc'],
         ]);
 
         $response = Msg91::sendOtp(OtpData::fromArray([
-            'mobile'      => '919876543210',
+            'mobile' => '919876543210',
             'template_id' => 'tpl_1',
         ]));
 

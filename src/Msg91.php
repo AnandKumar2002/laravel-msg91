@@ -32,33 +32,31 @@ use Parvion\Msg91\Traits\Behaviors\WithRetries;
  *   app(Msg91::class)               → singleton Msg91 instance
  *   app(OtpServiceInterface::class) → same singleton ✅ (Phase 3 — ManagesOtp)
  *   app(SmsServiceInterface::class) → same singleton ✅ (Phase 4 — ManagesSms)
- *
- * @package Parvion\Msg91
  */
 class Msg91 implements OtpServiceInterface, SmsServiceInterface
 {
-    use Macroable;
-
-    // ── API service traits ─────────────────────────────────────────────────────
-    use ManagesOtp;
-    use ManagesSms;
-    use ManagesEmail;
-    use ManagesWhatsApp;
-
     // ── Cross-cutting behavior traits ──────────────────────────────────────────
     use FakesMsg91;
+
     use InteractsWithConfig;
+    use Macroable;
+    use ManagesEmail;
+    // ── API service traits ─────────────────────────────────────────────────────
+    use ManagesOtp;
+
+    use ManagesSms;
     use ManagesThrottling;
+    use ManagesWhatsApp;
     use WithRetries;
 
     /**
      * Create a new Msg91 instance.
      *
-     * @param  Msg91ClientInterface  $client      The HTTP client bound in the container.
-     * @param  LogDriverManager      $logManager  Resolved log driver (null|log|database|stack).
+     * @param  Msg91ClientInterface  $client  The HTTP client bound in the container.
+     * @param  LogDriverManager  $logManager  Resolved log driver (null|log|database|stack).
      */
     public function __construct(
         protected readonly Msg91ClientInterface $client,
-        protected readonly LogDriverManager     $logManager,
+        protected readonly LogDriverManager $logManager,
     ) {}
 }

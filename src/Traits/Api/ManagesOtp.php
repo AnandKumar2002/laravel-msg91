@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Parvion\Msg91\Traits\Api;
 
+use Carbon\Carbon;
 use Parvion\Msg91\DTOs\OtpData;
 use Parvion\Msg91\Enums\OtpRetryType;
 use Parvion\Msg91\Events\MessageFailed;
@@ -11,6 +12,7 @@ use Parvion\Msg91\Events\OtpSent;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\InvalidOtpException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
+use Parvion\Msg91\Exceptions\Msg91RateLimitException;
 use Parvion\Msg91\Support\PhoneNumberFormatter;
 
 /**
@@ -34,8 +36,6 @@ use Parvion\Msg91\Support\PhoneNumberFormatter;
  *   - $this->withRetry()    → WithRetries trait
  *   - $this->checkThrottle() / $this->resetThrottle() → ManagesThrottling trait
  *   - $this->isFeatureEnabled() / $this->getDefaultCountryCode() → InteractsWithConfig trait
- *
- * @package Parvion\Msg91\Traits\Api
  */
 trait ManagesOtp
 {
@@ -44,9 +44,9 @@ trait ManagesOtp
      *
      * Fires: OtpSent (on success), MessageFailed (on failure)
      *
-     * @throws FeatureDisabledException  When MSG91_FEATURE_OTP=false
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException  When throttle exceeded
-     * @throws Msg91ApiException  On API-level errors
+     * @throws FeatureDisabledException When MSG91_FEATURE_OTP=false
+     * @throws Msg91RateLimitException When throttle exceeded
+     * @throws Msg91ApiException On API-level errors
      */
     public function sendOtp(OtpData $data): array
     {
@@ -62,7 +62,7 @@ trait ManagesOtp
         );
 
         // ── 3. Throttle guard ──────────────────────────────────────────────────
-        $this->checkThrottle('otp:send:' . $formattedMobile);
+        $this->checkThrottle('otp:send:'.$formattedMobile);
 
         // ── 4. Build payload ───────────────────────────────────────────────────
         $payload = array_merge($data->toArray(), ['mobile' => $formattedMobile]);
@@ -74,8 +74,8 @@ trait ManagesOtp
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'otp',
-                payload:   ['mobile' => $formattedMobile, 'template_id' => $data->templateId],
+                channel: 'otp',
+                payload: ['mobile' => $formattedMobile, 'template_id' => $data->templateId],
                 exception: $e,
                 recipient: $formattedMobile,
             ));
@@ -84,8 +84,8 @@ trait ManagesOtp
 
         // ── 6. Dispatch success event ──────────────────────────────────────────
         event(new OtpSent(
-            otpData:         $data,
-            response:        $response,
+            otpData: $data,
+            response: $response,
             formattedMobile: $formattedMobile,
         ));
 
@@ -99,7 +99,7 @@ trait ManagesOtp
      * On failure, the appropriate InvalidOtpException subtype is thrown.
      *
      * @throws FeatureDisabledException
-     * @throws InvalidOtpException      expired() | incorrect() | alreadyUsed()
+     * @throws InvalidOtpException expired() | incorrect() | alreadyUsed()
      * @throws Msg91ApiException
      */
     public function verifyOtp(string $mobile, string $otp): array
@@ -119,7 +119,7 @@ trait ManagesOtp
         try {
             $response = $this->client->get('otp/verify', [
                 'mobile' => $formattedMobile,
-                'otp'    => $otp,
+                'otp' => $otp,
             ]);
         } catch (Msg91ApiException $e) {
             $message = strtolower($e->getMessage());
@@ -144,8 +144,8 @@ trait ManagesOtp
 
             // Fire MessageFailed for any unrecognised API error
             event(new MessageFailed(
-                channel:   'otp',
-                payload:   ['mobile' => $formattedMobile],
+                channel: 'otp',
+                payload: ['mobile' => $formattedMobile],
                 exception: $e,
                 recipient: $formattedMobile,
             ));
@@ -154,7 +154,7 @@ trait ManagesOtp
         }
 
         // ── 4. Reset throttle — successful verification ────────────────────────
-        $this->resetThrottle('otp:send:' . $formattedMobile);
+        $this->resetThrottle('otp:send:'.$formattedMobile);
 
         return $response;
     }
@@ -166,7 +166,7 @@ trait ManagesOtp
      * Subject to throttle guard on resend attempts.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function resendOtp(string $mobile): array
@@ -181,20 +181,20 @@ trait ManagesOtp
             $mobile,
             $this->getDefaultCountryCode()
         );
-        $this->checkThrottle('otp:resend:' . $formattedMobile);
+        $this->checkThrottle('otp:resend:'.$formattedMobile);
 
         // ── 3. Call API with retry ─────────────────────────────────────────────
         try {
             return $this->withRetry(
                 fn () => $this->client->get('otp/retry', [
-                    'mobile'    => $formattedMobile,
+                    'mobile' => $formattedMobile,
                     'retrytype' => 'text',
                 ])
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'otp',
-                payload:   ['mobile' => $formattedMobile, 'retrytype' => 'text'],
+                channel: 'otp',
+                payload: ['mobile' => $formattedMobile, 'retrytype' => 'text'],
                 exception: $e,
                 recipient: $formattedMobile,
             ));
@@ -209,7 +209,7 @@ trait ManagesOtp
      * caller can explicitly choose voice or text delivery.
      *
      * @throws FeatureDisabledException
-     * @throws \Parvion\Msg91\Exceptions\Msg91RateLimitException
+     * @throws Msg91RateLimitException
      * @throws Msg91ApiException
      */
     public function retryOtp(string $mobile, OtpRetryType $type): array
@@ -224,20 +224,20 @@ trait ManagesOtp
             $mobile,
             $this->getDefaultCountryCode()
         );
-        $this->checkThrottle('otp:retry:' . $formattedMobile);
+        $this->checkThrottle('otp:retry:'.$formattedMobile);
 
         // ── 3. Call API with retry ─────────────────────────────────────────────
         try {
             return $this->withRetry(
                 fn () => $this->client->get('otp/retry', [
-                    'mobile'    => $formattedMobile,
+                    'mobile' => $formattedMobile,
                     'retrytype' => $type->value,
                 ])
             );
         } catch (\Throwable $e) {
             event(new MessageFailed(
-                channel:   'otp',
-                payload:   ['mobile' => $formattedMobile, 'retrytype' => $type->value],
+                channel: 'otp',
+                payload: ['mobile' => $formattedMobile, 'retrytype' => $type->value],
                 exception: $e,
                 recipient: $formattedMobile,
             ));
@@ -260,9 +260,6 @@ trait ManagesOtp
      * Send an OTP with cross-channel fallback.
      * Attempts to send via the primary channel, and falls back to secondary channels if it fails.
      *
-     * @param  string $mobile
-     * @param  array  $channels
-     * @return array
      *
      * @throws FeatureDisabledException
      * @throws Msg91ApiException
@@ -273,7 +270,7 @@ trait ManagesOtp
             throw FeatureDisabledException::make('otp');
         }
 
-        $this->checkThrottle('otp:fallback:' . $mobile);
+        $this->checkThrottle('otp:fallback:'.$mobile);
 
         // Basic implementation for a smart fallback system
         $lastException = null;
@@ -284,7 +281,7 @@ trait ManagesOtp
                 // or we loop through and try sending via respective methods.
                 // Assuming MSG91 supports a generic send mechanism or we use our own internal methods:
                 if ($channel === 'sms') {
-                    return $this->sendOtp(\Parvion\Msg91\DTOs\OtpData::fromArray([
+                    return $this->sendOtp(OtpData::fromArray([
                         'mobile' => $mobile,
                     ]));
                 } elseif ($channel === 'whatsapp') {
@@ -301,19 +298,16 @@ trait ManagesOtp
             }
         }
 
-        throw $lastException ?? new Msg91ApiException("All fallback channels failed for OTP.", 500);
+        throw $lastException ?? new Msg91ApiException('All fallback channels failed for OTP.', 500);
     }
 
     /**
      * Fetch OTP usage analytics.
      *
-     * @param  \Carbon\Carbon $startDate
-     * @param  \Carbon\Carbon $endDate
-     * @return array
      *
      * @throws Msg91ApiException
      */
-    public function getOtpAnalytics(\Carbon\Carbon $startDate, \Carbon\Carbon $endDate): array
+    public function getOtpAnalytics(Carbon $startDate, Carbon $endDate): array
     {
         if (! $this->isFeatureEnabled('otp')) {
             throw FeatureDisabledException::make('otp');
@@ -323,24 +317,21 @@ trait ManagesOtp
 
         $queryString = http_build_query([
             'startDate' => $startDate->format('Y-m-d'),
-            'endDate'   => $endDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
         ]);
 
         return $this->withRetry(
-            fn () => $this->client->get('report/analytics/p/otp?' . $queryString)
+            fn () => $this->client->get('report/analytics/p/otp?'.$queryString)
         );
     }
 
     /**
      * Fetch OTP delivery logs.
      *
-     * @param  \Carbon\Carbon $startDate
-     * @param  \Carbon\Carbon $endDate
-     * @return array
      *
      * @throws Msg91ApiException
      */
-    public function getOtpLogs(\Carbon\Carbon $startDate, \Carbon\Carbon $endDate): array
+    public function getOtpLogs(Carbon $startDate, Carbon $endDate): array
     {
         if (! $this->isFeatureEnabled('otp')) {
             throw FeatureDisabledException::make('otp');
@@ -350,11 +341,11 @@ trait ManagesOtp
 
         $queryString = http_build_query([
             'startDate' => $startDate->format('Y-m-d'),
-            'endDate'   => $endDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
         ]);
 
         return $this->withRetry(
-            fn () => $this->client->post('report/logs/otp?' . $queryString, [])
+            fn () => $this->client->post('report/logs/otp?'.$queryString, [])
         );
     }
 }

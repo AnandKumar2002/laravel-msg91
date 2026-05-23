@@ -29,8 +29,6 @@ use PHPUnit\Framework\Assert as PHPUnit;
  *
  * The fake implements both OtpServiceInterface and SmsServiceInterface
  * so it can be type-hinted in your application code.
- *
- * @package Parvion\Msg91\Testing
  */
 class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
 {
@@ -70,9 +68,9 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
 
     /** The fake response returned by all API methods. */
     protected array $fakeResponse = [
-        'type'    => 'success',
+        'type' => 'success',
         'message' => 'Fake response from Msg91Fake.',
-        'data'    => [],
+        'data' => [],
     ];
 
     /**
@@ -94,7 +92,7 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
     public function sendOtp(OtpData $data): array
     {
         $this->otpSent[] = [
-            'data'   => $data,
+            'data' => $data,
             'mobile' => $data->mobile,
         ];
 
@@ -105,7 +103,7 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
     {
         $this->otpVerified[] = [
             'mobile' => $mobile,
-            'otp'    => $otp,
+            'otp' => $otp,
         ];
 
         return $this->fakeResponse;
@@ -124,7 +122,7 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
     {
         $this->otpRetried[] = [
             'mobile' => $mobile,
-            'type'   => $type,
+            'type' => $type,
         ];
 
         return $this->fakeResponse;
@@ -147,7 +145,7 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
     {
         $this->bulkSmsSent[] = [
             'recipients' => $recipients,
-            'data'       => $data,
+            'data' => $data,
         ];
 
         return $this->fakeResponse;
@@ -177,7 +175,7 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
     {
         $this->bulkEmailSent[] = [
             'recipients' => $recipients,
-            'data'       => $data,
+            'data' => $data,
         ];
 
         return $this->fakeResponse;
@@ -241,7 +239,7 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
         PHPUnit::assertCount(
             $count,
             $this->otpSent,
-            "Expected {$count} OTP send(s), but got " . count($this->otpSent) . '.'
+            "Expected {$count} OTP send(s), but got ".count($this->otpSent).'.'
         );
     }
 
@@ -445,16 +443,16 @@ class Msg91Fake implements OtpServiceInterface, SmsServiceInterface
      */
     public function reset(): static
     {
-        $this->otpSent              = [];
-        $this->otpVerified          = [];
-        $this->otpResent            = [];
-        $this->otpRetried           = [];
-        $this->smsSent              = [];
-        $this->bulkSmsSent          = [];
+        $this->otpSent = [];
+        $this->otpVerified = [];
+        $this->otpResent = [];
+        $this->otpRetried = [];
+        $this->smsSent = [];
+        $this->bulkSmsSent = [];
         $this->deliveryStatusChecked = [];
-        $this->emailSent            = [];
-        $this->bulkEmailSent        = [];
-        $this->whatsAppSent         = [];
+        $this->emailSent = [];
+        $this->bulkEmailSent = [];
+        $this->whatsAppSent = [];
 
         return $this;
     }

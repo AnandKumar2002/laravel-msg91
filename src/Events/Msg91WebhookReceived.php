@@ -12,15 +12,10 @@ class Msg91WebhookReceived
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * @var array
-     */
     public array $payload;
 
     /**
      * Create a new event instance.
-     *
-     * @param array $payload
      */
     public function __construct(array $payload)
     {

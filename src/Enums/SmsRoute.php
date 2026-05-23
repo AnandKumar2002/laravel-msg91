@@ -12,8 +12,6 @@ namespace Parvion\Msg91\Enums;
  *
  * Usage:
  *   SmsData::fromArray(['route' => SmsRoute::Transactional, ...])
- *
- * @package Parvion\Msg91\Enums
  */
 enum SmsRoute: int
 {
@@ -32,9 +30,9 @@ enum SmsRoute: int
     public function label(): string
     {
         return match ($this) {
-            self::Promotional    => 'Promotional',
-            self::Transactional  => 'Transactional',
-            self::International  => 'International',
+            self::Promotional => 'Promotional',
+            self::Transactional => 'Transactional',
+            self::International => 'International',
         };
     }
 }

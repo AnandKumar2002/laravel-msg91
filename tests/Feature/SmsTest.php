@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Parvion\Msg91\Tests\Feature;
 
+use Illuminate\Support\Facades\Queue;
 use Parvion\Msg91\DTOs\SmsData;
 use Parvion\Msg91\Enums\SmsRoute;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
@@ -11,7 +12,6 @@ use Parvion\Msg91\Facades\Msg91;
 use Parvion\Msg91\Jobs\SendSmsJob;
 use Parvion\Msg91\Testing\Msg91Fake;
 use Parvion\Msg91\Tests\TestCase;
-use Illuminate\Support\Facades\Queue;
 
 /**
  * Feature tests for the SMS service (ManagesSms trait) via Msg91Fake.
@@ -31,7 +31,7 @@ class SmsTest extends TestCase
     public function test_send_sms_records_the_call(): void
     {
         $sms = SmsData::fromArray([
-            'mobile'  => '919876543210',
+            'mobile' => '919876543210',
             'message' => 'Your order has shipped.',
         ]);
 
@@ -44,9 +44,9 @@ class SmsTest extends TestCase
     public function test_send_sms_records_with_callback_assertion(): void
     {
         $sms = SmsData::fromArray([
-            'mobile'  => '919876543210',
+            'mobile' => '919876543210',
             'message' => 'Hello World',
-            'route'   => SmsRoute::Transactional,
+            'route' => SmsRoute::Transactional,
         ]);
 
         Msg91::sendSms($sms);
@@ -71,7 +71,7 @@ class SmsTest extends TestCase
         $this->expectExceptionMessage('[sms]');
 
         $real->sendSms(SmsData::fromArray([
-            'mobile'  => '919876543210',
+            'mobile' => '919876543210',
             'message' => 'test',
         ]));
     }
@@ -81,7 +81,7 @@ class SmsTest extends TestCase
     public function test_send_bulk_sms_records_the_call(): void
     {
         $sms = SmsData::fromArray([
-            'mobile'  => '919876543210', // overridden by $recipients
+            'mobile' => '919876543210', // overridden by $recipients
             'message' => 'Bulk message',
         ]);
 
@@ -108,7 +108,7 @@ class SmsTest extends TestCase
         Queue::fake();
 
         $sms = SmsData::fromArray([
-            'mobile'  => '919876543210',
+            'mobile' => '919876543210',
             'message' => 'Queued message',
         ]);
 
@@ -122,7 +122,7 @@ class SmsTest extends TestCase
         Queue::fake();
 
         $sms = SmsData::fromArray([
-            'mobile'  => '919876543210',
+            'mobile' => '919876543210',
             'message' => 'Bulk queued',
         ]);
 
