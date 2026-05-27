@@ -6,6 +6,7 @@ namespace Parvion\Msg91\Traits\Api;
 
 use Carbon\Carbon;
 use Parvion\Msg91\DTOs\EmailData;
+use Parvion\Msg91\Events\EmailSent;
 use Parvion\Msg91\Events\MessageFailed;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
@@ -63,9 +64,13 @@ trait ManagesEmail
 
         // ── 4. Call API with retry ─────────────────────────────────────────────
         try {
-            return $this->withRetry(
+            $response = $this->withRetry(
                 fn () => $this->client->post('email/send', $payload)
             );
+
+            event(new EmailSent($recipients, $data, $response));
+
+            return $response;
         } catch (\Throwable $e) {
             event(new MessageFailed(
                 channel: 'email',
@@ -117,9 +122,13 @@ trait ManagesEmail
 
         // ── 4. Call API with retry ─────────────────────────────────────────────
         try {
-            return $this->withRetry(
+            $response = $this->withRetry(
                 fn () => $this->client->post('email/send', $payload)
             );
+
+            event(new EmailSent($recipients, $data, $response));
+
+            return $response;
         } catch (\Throwable $e) {
             event(new MessageFailed(
                 channel: 'email',

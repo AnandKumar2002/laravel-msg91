@@ -39,8 +39,8 @@ return new class extends Migration
             // HTTP status code (200, 400, 429, 500, etc.)
             $table->unsignedSmallInteger('http_status')->nullable();
 
-            // Final outcome: success | failed
-            $table->enum('status', ['success', 'failed'])->index();
+            // Final outcome: success | failed | pending | delivered | etc.
+            $table->string('status', 20)->index();
 
             // Exception message if the call failed
             $table->text('error_message')->nullable();

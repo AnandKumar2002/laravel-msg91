@@ -97,6 +97,14 @@ return [
         'driver' => env('MSG91_LOG_DRIVER', 'null'),   // null | log | database | stack
         'channel' => env('MSG91_LOG_CHANNEL', null),
         'level' => env('MSG91_LOG_LEVEL', 'info'),
+
+        // Granularly enable or disable logging per MSG91 service channel
+        'channels' => [
+            'otp' => (bool) env('MSG91_LOG_OTP', true),
+            'sms' => (bool) env('MSG91_LOG_SMS', true),
+            'email' => (bool) env('MSG91_LOG_EMAIL', true),
+            'whatsapp' => (bool) env('MSG91_LOG_WHATSAPP', true),
+        ],
     ],
 
     /*

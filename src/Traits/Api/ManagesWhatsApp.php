@@ -6,6 +6,7 @@ namespace Parvion\Msg91\Traits\Api;
 
 use Parvion\Msg91\DTOs\WhatsAppData;
 use Parvion\Msg91\Events\MessageFailed;
+use Parvion\Msg91\Events\WhatsAppSent;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
 use Parvion\Msg91\Exceptions\Msg91RateLimitException;
@@ -67,12 +68,16 @@ trait ManagesWhatsApp
 
         // ── 5. Call API with retry ─────────────────────────────────────────────
         try {
-            return $this->withRetry(
+            $response = $this->withRetry(
                 fn () => $this->client->post(
                     'whatsapp/whatsapp-outbound-message/',
                     $payload
                 )
             );
+
+            event(new WhatsAppSent($formattedMobile, $data, $response));
+
+            return $response;
         } catch (\Throwable $e) {
             event(new MessageFailed(
                 channel: 'whatsapp',

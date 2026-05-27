@@ -1,6 +1,6 @@
 {
     "name": "parvion/laravel-msg91",
-    "description": "Enterprise-grade MSG91 API wrapper for Laravel — OTP, SMS, Email & WhatsApp with a clean Facade API, strongly-typed DTOs, Webhooks, queued Jobs, and a built-in Fake for testing.",
+    "description": "A robust Laravel wrapper for MSG91 (v5) supporting OTP, SMS, Email, and WhatsApp with full database logging.",
     "keywords": [
         "laravel",
         "msg91",

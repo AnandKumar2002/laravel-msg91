@@ -8,8 +8,11 @@ use Illuminate\Support\ServiceProvider;
 use Parvion\Msg91\Contracts\Msg91ClientInterface;
 use Parvion\Msg91\Contracts\OtpServiceInterface;
 use Parvion\Msg91\Contracts\SmsServiceInterface;
+use Parvion\Msg91\Events\EmailSent;
 use Parvion\Msg91\Events\MessageFailed;
 use Parvion\Msg91\Events\OtpSent;
+use Parvion\Msg91\Events\SmsSent;
+use Parvion\Msg91\Events\WhatsAppSent;
 use Parvion\Msg91\Http\Msg91Client;
 use Parvion\Msg91\Listeners\LogMsg91Activity;
 use Parvion\Msg91\Logging\LogDriverManager;
@@ -89,6 +92,9 @@ class Msg91ServiceProvider extends ServiceProvider
         }
 
         $this->app['events']->listen(OtpSent::class, LogMsg91Activity::class);
+        $this->app['events']->listen(SmsSent::class, LogMsg91Activity::class);
+        $this->app['events']->listen(EmailSent::class, LogMsg91Activity::class);
+        $this->app['events']->listen(WhatsAppSent::class, LogMsg91Activity::class);
         $this->app['events']->listen(MessageFailed::class, LogMsg91Activity::class);
     }
 }

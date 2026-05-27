@@ -7,6 +7,7 @@ namespace Parvion\Msg91\Traits\Api;
 use Carbon\Carbon;
 use Parvion\Msg91\DTOs\SmsData;
 use Parvion\Msg91\Events\MessageFailed;
+use Parvion\Msg91\Events\SmsSent;
 use Parvion\Msg91\Exceptions\FeatureDisabledException;
 use Parvion\Msg91\Exceptions\Msg91ApiException;
 use Parvion\Msg91\Exceptions\Msg91RateLimitException;
@@ -80,9 +81,13 @@ trait ManagesSms
 
         // ── 5. Call API with retry ─────────────────────────────────────────────
         try {
-            return $this->withRetry(
+            $response = $this->withRetry(
                 fn () => $this->client->post('flow/', $payload)
             );
+
+            event(new SmsSent($formatted, $data, $response));
+
+            return $response;
         } catch (\Throwable $e) {
             event(new MessageFailed(
                 channel: 'sms',
@@ -134,9 +139,13 @@ trait ManagesSms
 
         // ── 5. Call API with retry ─────────────────────────────────────────────
         try {
-            return $this->withRetry(
+            $response = $this->withRetry(
                 fn () => $this->client->post('flow/', $payload)
             );
+
+            event(new SmsSent($formatted, $data, $response));
+
+            return $response;
         } catch (\Throwable $e) {
             event(new MessageFailed(
                 channel: 'sms',
